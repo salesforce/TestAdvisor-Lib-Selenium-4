@@ -3,7 +3,7 @@
 	<groupId>com.salesforce.cte</groupId>
 	<artifactId>testadvisor-lib-selenium-4</artifactId>
 	<version>0.1.12-SNAPSHOT</version>
-	<name>Selenium 3 support for Test Advisor Library</name>
+	<name>Selenium 4 support for Test Advisor Library</name>
 	<description>A Selenium 4 based UI test library to generate enhanced test logs</description>
 	<packaging>jar</packaging>
 

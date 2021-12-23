@@ -354,17 +354,6 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		}
 	}
 
-	@Override
-	public Pdf print(PrintOptions printOptions) throws WebDriverException {
-		eventDispatcher.beforePrint(printOptions);
-		Response response = execute(DriverCommand.PRINT_PAGE(printOptions));
-
-		Object result = response.getValue();
-		Pdf printedPage = new Pdf((String) result);
-		eventDispatcher.afterPrint(printOptions, printedPage);
-		return printedPage;
-	}
-
 	@SuppressWarnings("unchecked")
 	@Override
 	public WebElement findElement(By locator) {
@@ -373,28 +362,28 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		return findElement(this, DriverCommand::FIND_ELEMENT, locator);
 	}
 
-	WebElement findElement(SearchContext context, BiFunction<String, Object, CommandPayload> findCommand, By locator) {
-		eventDispatcher.beforeFindElementByWebDriver(locator);
-		WebElement returnedElement = elementLocation.findElement(this, context, findCommand, locator);
-		eventDispatcher.afterFindElementByWebDriver(returnedElement, locator);
+	<T extends WebElement> T findElement(SearchContext context, BiFunction<String, Object, CommandPayload> findCommand, By locator) {
+		eventDispatcher.beforeFindElement(locator);
+		T returnedElement = elementLocation.findElement(this, context, findCommand, locator);
+		eventDispatcher.afterFindElement(returnedElement, locator);
 		highlightElement(returnedElement);
 		return returnedElement;
 	}
 
 	@Override
-	public List<WebElement> findElements(By locator) {
+	public <T extends WebElement> List<T> findElements(By locator) {
 		Require.nonNull("Locator", locator);
 
 		return findElements(this, DriverCommand::FIND_ELEMENTS, locator);
 	}
 
-	public List<WebElement> findElements(SearchContext context, BiFunction<String, Object, CommandPayload> findCommand,
+	public <T extends WebElement> List<T> findElements(SearchContext context, BiFunction<String, Object, CommandPayload> findCommand,
 			By locator) {
-		eventDispatcher.beforeFindElementsByWebDriver(locator);
-		List<WebElement> returnedElements = elementLocation.findElements(this, context, findCommand, locator);
-		eventDispatcher.afterFindElementsByWebDriver(returnedElements, locator);
+		eventDispatcher.beforeFindElements(locator);
+		List<T> returnedElements = elementLocation.findElements(this, context, findCommand, locator);
+		eventDispatcher.afterFindElements(returnedElements, locator);
 
-		for (WebElement element : returnedElements) {
+		for (T element : returnedElements) {
 			highlightElement(element);
 		}
 		
@@ -403,21 +392,31 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 
 	/**
 	 * @deprecated Rely on using {@link By.Remotable} instead
+	 * @param <T>   WebElement or any type extending WebElement to support
+	 *              customized WebElement classes
+	 * @param by    locator
+	 * @param using type of locator
+	 * @return UnsupportedOperationException because this method is no longer supported
 	 */
 	@Deprecated
-	protected WebElement findElement(String by, String using) {
+	protected <T extends WebElement> T findElement(String by, String using) {
 		throw new UnsupportedOperationException("`findElement` has been replaced by usages of " + By.Remotable.class);
 	}
 
 	/**
 	 * @deprecated Rely on using {@link By.Remotable} instead
+	 * @param <T>   WebElement or any type extending WebElement to support
+	 *              customized WebElement classes
+	 * @param by    locator
+	 * @param using type of locator
+	 * @return UnsupportedOperationException because this method is no longer supported
 	 */
 	@Deprecated
-	protected List<WebElement> findElements(String by, String using) {
+	protected <T extends WebElement> List<T> findElements(String by, String using) {
 		throw new UnsupportedOperationException("`findElement` has been replaced by usages of " + By.Remotable.class);
 	}
 
-	protected void setFoundBy(SearchContext context, WebElement element, String by, String using) {
+	protected <T extends WebElement> void setFoundBy(SearchContext context, T element, String by, String using) {
 		if (element instanceof RemoteWebElement) {
 			RemoteWebElement remoteElement = (RemoteWebElement) element;
 			remoteElement.setFoundBy(context, by, using);
@@ -662,6 +661,17 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		eventDispatcher.beforeActions(actions);
 		execute(DriverCommand.ACTIONS(actions));
 		eventDispatcher.afterActions(actions);
+	}
+
+	@Override
+	public Pdf print(PrintOptions printOptions) throws WebDriverException {
+		eventDispatcher.beforePrint(printOptions);
+		Response response = execute(DriverCommand.PRINT_PAGE(printOptions));
+
+		Object result = response.getValue();
+		Pdf printedPage = new Pdf((String) result);
+		eventDispatcher.afterPrint(printOptions, printedPage);
+		return printedPage;
 	}
 
 	@Override
@@ -1095,9 +1105,7 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 
 		@Override
 		public void to(String url) {
-			eventDispatcher.beforeTo(url);
 			get(url);
-			eventDispatcher.afterTo(url);
 		}
 
 		@Override
@@ -1138,7 +1146,7 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		}
 
 		@Override
-		public WebDriver frame(WebElement frameElement) {
+		public <T extends WebElement> WebDriver frame(T frameElement) {
 			eventDispatcher.beforeFrameByElement(frameElement);
 			Object elementAsJson = new WebElementToJsonConverter().apply(frameElement);
 			execute(DriverCommand.SWITCH_TO_FRAME(elementAsJson));
@@ -1211,11 +1219,8 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 
 		@Override
 		public Alert alert() {
-			eventDispatcher.beforeAlert();
 			execute(DriverCommand.GET_ALERT_TEXT);
-			Alert alert = new RemoteAlert();
-			eventDispatcher.afterAlert(alert);
-			return alert;
+			return new RemoteAlert();
 		}
 	}
 
@@ -1313,7 +1318,7 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 	/*
 	 * Draw a border around the element if JavaScript is enabled
 	 */
-	void highlightElement(WebElement element) {
+	private <T extends WebElement> void highlightElement(T element) {
 	    if (isJavascriptEnabled()) {
 			// hardcode border color to a customized blue to satisfy screenshot comparison
 			// so it won't conflict with common blue used on the page

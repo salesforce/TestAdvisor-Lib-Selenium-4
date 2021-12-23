@@ -75,17 +75,17 @@ public class ScreenshotLogger extends AbstractEventListener {
 	 *---------------------------------------------------------------------------*/
 
 	@Override
-	public void beforeClick(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeClick(WebDriverEvent event, T element) {
         captureScreenShot(event);   
 	}
 
 	@Override
-	public void beforeClear(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeClear(WebDriverEvent event, T element) {
         captureScreenShot(event);   
 	}
 
 	@Override
-	public void beforeSendKeysByElement(WebDriverEvent event, WebElement element, CharSequence... keysToSend) {
+	public <T extends WebElement> void beforeSendKeysByElement(WebDriverEvent event, T element, CharSequence... keysToSend) {
 		// Skip capturing a screenshot if it is the same locator, because it means
 		// a test is sending text character by character to the same text field.
 		if (isDifferentLocator(element))
@@ -93,7 +93,7 @@ public class ScreenshotLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void beforeSubmit(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeSubmit(WebDriverEvent event, T element) {
         captureScreenShot(event);   
     }
 
@@ -126,7 +126,7 @@ public class ScreenshotLogger extends AbstractEventListener {
 		}
     }
     
-    private boolean isDifferentLocator(WebElement elem) {
+    private <T extends WebElement> boolean isDifferentLocator(T elem) {
     	String locator = WebDriverEvent.getLocatorFromWebElement(elem);
     	// if locator is null we assume it's a different locator
     	if (locator == null)

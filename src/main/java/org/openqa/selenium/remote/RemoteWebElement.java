@@ -109,7 +109,9 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 			allKeysToSend = files.stream().map(this::upload).collect(Collectors.joining("\n"));
 		}
 
+		eventDispatcher.beforeSendKeysByElement(this, allKeysToSend);
 		execute(DriverCommand.SEND_KEYS_TO_ELEMENT(id, new CharSequence[] { allKeysToSend }));
+		eventDispatcher.afterSendKeysByElement(this, allKeysToSend);
 	}
 
 	private String upload(File localFile) {
@@ -119,8 +121,11 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 
 		try {
 			String zip = Zip.zip(localFile);
+			eventDispatcher.beforeUploadFile(this, localFile);
 			Response response = execute(DriverCommand.UPLOAD_FILE(zip));
-			return (String) response.getValue();
+			String uploadResponse = (String) response.getValue();
+			eventDispatcher.afterUploadFile(this, localFile, uploadResponse);
+			return uploadResponse;
 		} catch (IOException e) {
 			throw new WebDriverException("Cannot upload " + localFile, e);
 		}
@@ -128,37 +133,60 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 
 	@Override
 	public void clear() {
+		eventDispatcher.beforeClear(this);
 		execute(DriverCommand.CLEAR_ELEMENT(id));
+		eventDispatcher.afterClear(this);
 	}
 
 	@Override
 	public String getTagName() {
-		return (String) execute(DriverCommand.GET_ELEMENT_TAG_NAME(id)).getValue();
+		eventDispatcher.beforeGetTagName(this);
+		String tagName = (String) execute(DriverCommand.GET_ELEMENT_TAG_NAME(id)).getValue();
+		eventDispatcher.afterGetTagName(tagName, this);
+		return tagName;
 	}
 
 	@Override
 	public String getDomProperty(String name) {
-		return stringValueOf(execute(DriverCommand.GET_ELEMENT_DOM_PROPERTY(id, name)).getValue());
+		eventDispatcher.beforeGetDomProperty(name, this);
+		String value = stringValueOf(
+				execute(DriverCommand.GET_ELEMENT_DOM_PROPERTY(id, name)).getValue());
+		eventDispatcher.afterGetDomProperty(name, value, this);
+		return value;
 	}
 
 	@Override
 	public String getDomAttribute(String name) {
-		return stringValueOf(execute(DriverCommand.GET_ELEMENT_DOM_ATTRIBUTE(id, name)).getValue());
+		eventDispatcher.beforeGetDomAttribute(name, this);
+		String value = stringValueOf(
+				execute(DriverCommand.GET_ELEMENT_DOM_ATTRIBUTE(id, name)).getValue());
+		eventDispatcher.afterGetDomAttribute(name, value, this);
+		return value;
 	}
 
 	@Override
 	public String getAttribute(String name) {
-		return stringValueOf(execute(DriverCommand.GET_ELEMENT_ATTRIBUTE(id, name)).getValue());
+		eventDispatcher.beforeGetAttribute(name, this);
+		String value = stringValueOf(
+				execute(DriverCommand.GET_ELEMENT_ATTRIBUTE(id, name)).getValue());
+		eventDispatcher.afterGetAttribute(name, value, this);
+		return value;
 	}
 
 	@Override
 	public String getAriaRole() {
-		return stringValueOf(execute(DriverCommand.GET_ELEMENT_ARIA_ROLE(id)).getValue());
+		eventDispatcher.beforeGetAriaRole(this);
+		String role = (String) execute(DriverCommand.GET_ELEMENT_ARIA_ROLE(id)).getValue();
+		eventDispatcher.afterGetAriaRole(role, this);
+		return role;
 	}
 
 	@Override
 	public String getAccessibleName() {
-		return stringValueOf(execute(DriverCommand.GET_ELEMENT_ACCESSIBLE_NAME(id)).getValue());
+		eventDispatcher.beforeGetAccessibleName(this);
+		String name = (String) execute(DriverCommand.GET_ELEMENT_ACCESSIBLE_NAME(id)).getValue();
+		eventDispatcher.afterGetAccessibleName(name, this);
+		return name;
 	}
 
 	private static String stringValueOf(Object o) {
@@ -170,9 +198,12 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 
 	@Override
 	public boolean isSelected() {
+		eventDispatcher.beforeIsSelected(this);
 		Object value = execute(DriverCommand.IS_ELEMENT_SELECTED(id)).getValue();
 		try {
-			return (Boolean) value;
+			boolean boolValue = (Boolean) value;
+			eventDispatcher.afterIsSelected(boolValue, this);
+			return boolValue;
 		} catch (ClassCastException ex) {
 			throw new WebDriverException("Returned value cannot be converted to Boolean: " + value, ex);
 		}
@@ -180,9 +211,12 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 
 	@Override
 	public boolean isEnabled() {
+		eventDispatcher.beforeIsEnabled(this);
 		Object value = execute(DriverCommand.IS_ELEMENT_ENABLED(id)).getValue();
 		try {
-			return (Boolean) value;
+			boolean boolValue = (Boolean) value;
+			eventDispatcher.afterIsEnabled(boolValue, this);
+			return boolValue;
 		} catch (ClassCastException ex) {
 			throw new WebDriverException("Returned value cannot be converted to Boolean: " + value, ex);
 		}
@@ -190,47 +224,65 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 
 	@Override
 	public String getText() {
+		eventDispatcher.beforeGetText(this);
 		Response response = execute(DriverCommand.GET_ELEMENT_TEXT(id));
-		return (String) response.getValue();
+		String text = (String) response.getValue();
+		eventDispatcher.afterGetText(text, this);
+		return text;
 	}
 
 	@Override
 	public String getCssValue(String propertyName) {
+		eventDispatcher.beforeGetCssValue(propertyName, this);
 		Response response = execute(DriverCommand.GET_ELEMENT_VALUE_OF_CSS_PROPERTY(id, propertyName));
-		return (String) response.getValue();
+		String value = (String) response.getValue();
+		eventDispatcher.afterGetText(value, this);
+		return value;
 	}
 
 	@Override
-	public List<WebElement> findElements(By locator) {
+	public <T extends WebElement> List<T> findElements(By locator) {
 		return parent.findElements(this, (using, value) -> FIND_CHILD_ELEMENTS(getId(), using, String.valueOf(value)),
 				locator);
 	}
 
 	@Override
-	public WebElement findElement(By locator) {
+	public <T extends WebElement> T findElement(By locator) {
 		return parent.findElement(this, (using, value) -> FIND_CHILD_ELEMENT(getId(), using, String.valueOf(value)),
 				locator);
 	}
 
 	/**
 	 * @deprecated Rely on using {@link By.Remotable} instead
+	 * @param <T>   WebElement or any type extending WebElement to support
+	 *              customized WebElement classes
+	 * @param using type of locator
+	 * @param value locator
+	 * @return UnsupportedOperationException because this method is no longer supported
 	 */
 	@Deprecated
-	protected WebElement findElement(String using, String value) {
+	protected <T extends WebElement> T findElement(String using, String value) {
 		throw new UnsupportedOperationException("`findElement` has been replaced by usages of " + By.Remotable.class);
 	}
 
 	/**
 	 * @deprecated Rely on using {@link By.Remotable} instead
+	 * @param <T>   WebElement or any type extending WebElement to support
+	 *              customized WebElement classes
+	 * @param using type of locator
+	 * @param value locator
+	 * @return UnsupportedOperationException because this method is no longer supported
 	 */
 	@Deprecated
-	protected List<WebElement> findElements(String using, String value) {
+	protected <T extends WebElement> List<T> findElements(String using, String value) {
 		throw new UnsupportedOperationException("`findElement` has been replaced by usages of " + By.Remotable.class);
 	}
 
 	@Override
 	public SearchContext getShadowRoot() {
+		eventDispatcher.beforeGetShadowRoot((WebElement) this);
 		Response response = execute(DriverCommand.GET_ELEMENT_SHADOW_ROOT(getId()));
+		eventDispatcher.afterGetShadowRoot(this);
 		return (SearchContext) response.getValue();
 	}
 
@@ -369,14 +421,21 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 	@Override
 	@Beta
 	public <X> X getScreenshotAs(OutputType<X> outputType) throws WebDriverException {
+		eventDispatcher.beforeGetScreenshotAs(outputType);
 		Response response = execute(DriverCommand.ELEMENT_SCREENSHOT(id));
 		Object result = response.getValue();
 		if (result instanceof String) {
 			String base64EncodedPng = (String) result;
-			return outputType.convertFromBase64Png(base64EncodedPng);
+			X screenshot = outputType.convertFromBase64Png(base64EncodedPng);
+			eventDispatcher.afterGetScreenshotAs(outputType, screenshot);
+			return screenshot;
 		} else if (result instanceof byte[]) {
-			return outputType.convertFromPngBytes((byte[]) result);
+			String base64EncodedPng = new String((byte[]) result);
+			X screenshot = outputType.convertFromBase64Png(base64EncodedPng);
+			eventDispatcher.afterGetScreenshotAs(outputType, screenshot);
+			return screenshot;
 		} else {
+			eventDispatcher.afterGetScreenshotAs(outputType, null);
 			throw new RuntimeException(
 					String.format("Unexpected result for %s command: %s", DriverCommand.ELEMENT_SCREENSHOT,
 							result == null ? "null" : result.getClass().getName() + " instance"));

@@ -60,7 +60,7 @@ public class RemoteMouse implements Mouse {
 
 	public void click(Coordinates where) {
 		moveIfNeeded(where);
-	
+
 		eventDispatcher.beforeClickByMouse(where);
 		executor.execute(DriverCommand.CLICK, ImmutableMap.of("button", 0));
 		eventDispatcher.afterClickByMouse(where);

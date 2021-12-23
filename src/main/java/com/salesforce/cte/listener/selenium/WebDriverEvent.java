@@ -35,18 +35,18 @@ public class WebDriverEvent {
 	public enum Cmd {
 		// commands called directly from WebDriver object
 		close(WebDriverInterface.WebDriver, "close"),
-		findElementByWebDriver(WebDriverInterface.WebDriver, "findElement"),
-		findElementsByWebDriver(WebDriverInterface.WebDriver, "findElements"),
+		findElement(WebDriverInterface.WebDriver, "findElement"),
+		findElements(WebDriverInterface.WebDriver, "findElements"),
 		get(WebDriverInterface.WebDriver, "get"),
 		getCurrentUrl(WebDriverInterface.WebDriver, "getCurrentUrl"),
 		getPageSource(WebDriverInterface.WebDriver, "getPageSource"),
 		getTitle(WebDriverInterface.WebDriver, "getTitle"),
 		getWindowHandle(WebDriverInterface.WebDriver, "getWindowHandle"),
 		getWindowHandles(WebDriverInterface.WebDriver, "getWindowHandles"),
-		print(WebDriverInterface.WebDriver, "print"),
 		quit(WebDriverInterface.WebDriver, "quit"),
 		// commands called directly from RemoteWebDriver object
 		perform(WebDriverInterface.RemoteWebDriver, "perform"),
+		print(WebDriverInterface.RemoteWebDriver, "print"),
 		resetInputState(WebDriverInterface.RemoteWebDriver, "resetInputState"),
 		// commands called directly from WebDriver object after casting to JavascriptExecutor
 		executeAsyncScript(WebDriverInterface.JavascriptExecutor, "executeAsyncScript"),
@@ -77,10 +77,8 @@ public class WebDriverEvent {
 		back(WebDriverInterface.Navigation, "back"),
 		forward(WebDriverInterface.Navigation, "forward"),
 		refresh(WebDriverInterface.Navigation, "refresh"),
-		to(WebDriverInterface.Navigation, "to"),
 		// commands called directly from WebDriver.TargetLocator object
 		activeElement(WebDriverInterface.TargetLocator, "activeElement"),
-		alert(WebDriverInterface.TargetLocator, "alert"),
 		defaultContent(WebDriverInterface.TargetLocator, "defaultContent"),
 		frameByIndex(WebDriverInterface.TargetLocator, "frame"),
 		frameByElement(WebDriverInterface.TargetLocator, "frame"),
@@ -103,13 +101,15 @@ public class WebDriverEvent {
 		// commands called directly from WebElement object
 		clickByElement(WebDriverInterface.WebElement, "click"),
 		clear(WebDriverInterface.WebElement, "clear"),
-		findElementByElement(WebDriverInterface.WebElement, "findElement"),
-		findElementsByElement(WebDriverInterface.WebElement, "findElements"),
 		getAttribute(WebDriverInterface.WebElement, "getAttribute"),
 		getCoordinates(WebDriverInterface.WebElement, "getCoordinates"),
 		getCssValue(WebDriverInterface.WebElement, "getCssValue"),
 		getScreenshotAsByElement(WebDriverInterface.WebElement, "getScreenshotAs"),
 		getTagName(WebDriverInterface.WebElement, "getTagName"),
+		getDomProperty(WebDriverInterface.WebElement, "getDomProperty"),
+		getDomAttribute(WebDriverInterface.WebElement, "getDomAttribute"),
+		getAriaRole(WebDriverInterface.WebElement, "getAriaRole"),
+		getAccessibleName(WebDriverInterface.WebElement, "getAccessibleName"),
 		getText(WebDriverInterface.WebElement, "getText"),
 		isDisplayed(WebDriverInterface.WebElement, "isDisplayed"),
 		isEnabled(WebDriverInterface.WebElement, "isEnabled"),
@@ -120,6 +120,7 @@ public class WebDriverEvent {
 		sendKeysByElement(WebDriverInterface.WebElement, "sendKeys"),
 		uploadFile(WebDriverInterface.WebElement, "sendKeys"),
 		submit(WebDriverInterface.WebElement, "submit"),
+		getShadowRoot(WebDriverInterface.WebElement, "getShadowRoot"),
 		// commands called directly from Keyboard object
 		sendKeysByKeyboard(WebDriverInterface.Keyboard, "sendKeys"),
 		pressKey(WebDriverInterface.Keyboard, "pressKey"),
@@ -392,7 +393,7 @@ public class WebDriverEvent {
 		timeElapsedEvent = System.nanoTime() - timeMarkerElapsedAction;
 	}
 
-	public static String getLocatorFromWebElement(WebElement elem) {
+	public static <T extends WebElement> String getLocatorFromWebElement(T elem) {
 		return (elem != null) ? getLocatorFromWebElement(elem.toString()) : null;
 	}
 

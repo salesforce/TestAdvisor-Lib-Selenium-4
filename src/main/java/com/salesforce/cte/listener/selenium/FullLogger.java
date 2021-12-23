@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.Dimension;
@@ -59,22 +58,22 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void beforeFindElementByWebDriver(WebDriverEvent event, By by) {
+	public void beforeFindElement(WebDriverEvent event, By by) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterFindElementByWebDriver(WebDriverEvent event, WebElement returnedElement, By by) {
+	public <T extends WebElement> void afterFindElement(WebDriverEvent event, T returnedElement, By by) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeFindElementsByWebDriver(WebDriverEvent event, By by) {
+	public void beforeFindElements(WebDriverEvent event, By by) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterFindElementsByWebDriver(WebDriverEvent event, List<WebElement> returnedElements, By by) {
+	public <T extends WebElement> void afterFindElements(WebDriverEvent event, List<T> returnedElements, By by) {
 		logEntries.add(event);
 	}
 
@@ -129,16 +128,6 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void beforePrint(WebDriverEvent event, PrintOptions printOptions) {
-		logEntries.add(event);
-	}
-
-	@Override
-	public void afterPrint(WebDriverEvent event, PrintOptions printOptions, Pdf printedPdfPage) {
-		logEntries.add(event);
-	}
-
-	@Override
 	public void beforeQuit(WebDriverEvent event) {
 		logEntries.add(event);
 	}
@@ -160,6 +149,16 @@ public class FullLogger extends AbstractEventListener {
 
 	@Override
 	public void afterActions(WebDriverEvent event, Collection<Sequence> actions) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void beforePrint(WebDriverEvent event, PrintOptions printOptions) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterPrint(WebDriverEvent event, PrintOptions printOptions, Pdf printedPdfPage) {
 		logEntries.add(event);
 	}
 
@@ -247,16 +246,6 @@ public class FullLogger extends AbstractEventListener {
 		logEntries.add(event);
 	}
 
-	@Override
-	public void beforeTo(WebDriverEvent event, String url) {
-		logEntries.add(event);
-	}
-
-	@Override
-	public void afterTo(WebDriverEvent event, String url) {
-		logEntries.add(event);
-	}
-
 	/*---------------------------------------------------------------------------
 	 * Section for all commands called directly from WebDriver.TargetLocator object.
 	 *---------------------------------------------------------------------------*/
@@ -267,17 +256,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterActiveElement(WebDriverEvent event, WebElement activeElement) {
-		logEntries.add(event);
-	}
-
-	@Override
-	public void beforeAlert(WebDriverEvent event) {
-		logEntries.add(event);
-	}
-
-	@Override
-	public void afterAlert(WebDriverEvent event, Alert alert) {
+	public <T extends WebElement> void afterActiveElement(WebDriverEvent event, T activeElement) {
 		logEntries.add(event);
 	}
 
@@ -302,12 +281,12 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void beforeFrameByElement(WebDriverEvent event, WebElement frameElement) {
+	public <T extends WebElement> void beforeFrameByElement(WebDriverEvent event, T frameElement) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterFrameByElement(WebDriverEvent event, WebElement frameElement) {
+	public <T extends WebElement> void afterFrameByElement(WebDriverEvent event, T frameElement) {
 		logEntries.add(event);
 	}
 
@@ -484,162 +463,152 @@ public class FullLogger extends AbstractEventListener {
 	 *---------------------------------------------------------------------------*/
 
 	@Override
-	public void beforeClick(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeClick(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterClick(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void afterClick(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeClear(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeClear(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterClear(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void afterClear(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeFindElementByElement(WebDriverEvent event, By by, WebElement element) {
+	public <T extends WebElement> void beforeGetAttribute(WebDriverEvent event, String name, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterFindElementByElement(WebDriverEvent event, WebElement returnedElement, By by, WebElement element) {
+	public <T extends WebElement> void afterGetAttribute(WebDriverEvent event, String value, String name, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeFindElementsByElement(WebDriverEvent event, By by, WebElement element) {
+	public <T extends WebElement> void beforeGetCssValue(WebDriverEvent event, String propertyName, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterFindElementsByElement(WebDriverEvent event, List<WebElement> returnedElements, By by, WebElement element) {
+	public <T extends WebElement> void afterGetCssValue(WebDriverEvent event, String propertyName, String value, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeGetAttribute(WebDriverEvent event, String name, WebElement element) {
+	public <T extends WebElement> void beforeGetTagName(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetAttribute(WebDriverEvent event, String value, String name, WebElement element) {
+	public <T extends WebElement> void afterGetTagName(WebDriverEvent event, String tagName, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeGetCssValue(WebDriverEvent event, String propertyName, WebElement element) {
+	public <T extends WebElement> void beforeGetText(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetCssValue(WebDriverEvent event, String propertyName, String value, WebElement element) {
+	public <T extends WebElement> void afterGetText(WebDriverEvent event, String text, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeGetTagName(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeIsDisplayed(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetTagName(WebDriverEvent event, String tagName, WebElement element) {
+	public <T extends WebElement> void afterIsDisplayed(WebDriverEvent event, boolean isDisplayed, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeGetText(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeIsEnabled(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetText(WebDriverEvent event, String text, WebElement element) {
+	public <T extends WebElement> void afterIsEnabled(WebDriverEvent event, boolean isEnabled, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeIsDisplayed(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeIsSelected(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterIsDisplayed(WebDriverEvent event, boolean isDisplayed, WebElement element) {
+	public <T extends WebElement> void afterIsSelected(WebDriverEvent event, boolean isSelected, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeIsEnabled(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeGetLocation(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterIsEnabled(WebDriverEvent event, boolean isEnabled, WebElement element) {
+	public <T extends WebElement> void afterGetLocation(WebDriverEvent event, Point point, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeIsSelected(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeGetSizeByElement(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterIsSelected(WebDriverEvent event, boolean isSelected, WebElement element) {
+	public <T extends WebElement> void afterGetSizeByElement(WebDriverEvent event, Dimension dimension, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeGetLocation(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeGetRect(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetLocation(WebDriverEvent event, Point point, WebElement element) {
+	public <T extends WebElement> void afterGetRect(WebDriverEvent event, Rectangle rectangle, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeGetSizeByElement(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeSendKeysByElement(WebDriverEvent event, T element, CharSequence... keysToSend) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetSizeByElement(WebDriverEvent event, Dimension dimension, WebElement element) {
+	public <T extends WebElement> void afterSendKeysByElement(WebDriverEvent event, T element, CharSequence... keysToSend) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeGetRect(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeSubmit(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetRect(WebDriverEvent event, Rectangle rectangle, WebElement element) {
+	public <T extends WebElement> void afterSubmit(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeSendKeysByElement(WebDriverEvent event, WebElement element, CharSequence... keysToSend) {
+	public <T extends WebElement> void beforeGetShadowRoot(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterSendKeysByElement(WebDriverEvent event, WebElement element, CharSequence... keysToSend) {
-		logEntries.add(event);
-	}
-
-	@Override
-	public void beforeSubmit(WebDriverEvent event, WebElement element) {
-		logEntries.add(event);
-	}
-
-	@Override
-	public void afterSubmit(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void afterGetShadowRoot(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
@@ -904,32 +873,32 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void beforeGetCoordinates(WebDriverEvent event, WebElement element) {
+	public <T extends WebElement> void beforeGetCoordinates(WebDriverEvent event, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetCoordinates(WebDriverEvent event, Coordinates coordinates, WebElement element) {
+	public <T extends WebElement> void afterGetCoordinates(WebDriverEvent event, Coordinates coordinates, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public <X> void beforeGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, WebElement element) {
+	public <X, T extends WebElement> void beforeGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public <X> void afterGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, X screenshot, WebElement element) {
+	public <X, T extends WebElement> void afterGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, X screenshot, T element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void beforeUploadFile(WebDriverEvent event, WebElement element, File localFile) {
+	public <T extends WebElement> void beforeUploadFile(WebDriverEvent event, T element, File localFile) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterUploadFile(WebDriverEvent event, WebElement element, File localFile, String response) {
+	public <T extends WebElement> void afterUploadFile(WebDriverEvent event, T element, File localFile, String response) {
 		logEntries.add(event);
 	}
 

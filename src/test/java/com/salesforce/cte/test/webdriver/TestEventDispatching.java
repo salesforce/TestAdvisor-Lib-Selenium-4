@@ -7,19 +7,14 @@
 
 package com.salesforce.cte.test.webdriver;
 
-import static org.testng.Assert.*;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import com.salesforce.cte.common.JsonHelper;
-import com.salesforce.cte.listener.selenium.EventDispatcher;
-import com.salesforce.cte.listener.selenium.FullLogger;
-import com.salesforce.cte.listener.selenium.IEventListener;
-import com.salesforce.cte.listener.selenium.ScreenshotLogger;
-import com.salesforce.cte.listener.testng.TestListener;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
@@ -34,6 +29,13 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
+
+import com.salesforce.cte.common.JsonHelper;
+import com.salesforce.cte.listener.selenium.EventDispatcher;
+import com.salesforce.cte.listener.selenium.FullLogger;
+import com.salesforce.cte.listener.selenium.IEventListener;
+import com.salesforce.cte.listener.selenium.ScreenshotLogger;
+import com.salesforce.cte.listener.testng.TestListener;
 
 /**
  * @author gneumann
@@ -374,21 +376,21 @@ public class TestEventDispatching {
 	@Test(priority = 2)
 	public void testSetTimeout() {
 		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		wd.manage().timeouts().setScriptTimeout(5000, TimeUnit.MILLISECONDS);
+		wd.manage().timeouts().scriptTimeout(Duration.ofSeconds(5));
 		assertNumOfLogEntries("setScriptTimeout", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
 	}
 
 	@Test(priority = 2)
 	public void testImplicitlyWait() {
 		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		wd.manage().timeouts().implicitlyWait(5000, TimeUnit.MILLISECONDS);
+		wd.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
 		assertNumOfLogEntries("implicitlyWait", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
 	}
 
 	@Test(priority = 2)
 	public void testPageLoadTimeout() {
 		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		wd.manage().timeouts().pageLoadTimeout(5000, TimeUnit.MILLISECONDS);
+		wd.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(5));
 		assertNumOfLogEntries("pageLoadTimeout", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
 	}
 
@@ -450,7 +452,7 @@ public class TestEventDispatching {
 		mce.setRemoteWebDriver(wd);
 
 		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		wd.manage().timeouts().setScriptTimeout(5000, TimeUnit.MILLISECONDS);
+		wd.manage().timeouts().scriptTimeout(Duration.ofSeconds(5));
 		assertNumOfLogEntries("setScriptTimeout", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
 	}
 
