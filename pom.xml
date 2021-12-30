@@ -164,7 +164,7 @@
 		<dependency>
 			<groupId>com.salesforce.cte</groupId>
 			<artifactId>testadvisor-lib</artifactId>
-			<version>[0.1.12,)</version>
+			<version>0.1.15</version>
 		</dependency>
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
