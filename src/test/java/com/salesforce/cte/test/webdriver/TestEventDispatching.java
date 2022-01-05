@@ -69,7 +69,7 @@ public class TestEventDispatching {
 		System.setProperty("testadvisor.capturescreenshot", "true");
 	}
 
-	@Test(priority = 1)
+//	@Test(priority = 1)
 	public void testOnExceptionWithNoCurrentEventSet() {
 		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
 		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
