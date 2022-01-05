@@ -1222,7 +1222,7 @@ public class EventDispatcher {
 			listener.afterGetCoordinates(event, coordinates, element);		
 	}
 
-	public <X, T extends WebElement> void beforeGetScreenshotAsByElement(OutputType<X> target, WebElement element) {
+	public <X> void beforeGetScreenshotAsByElement(OutputType<X> target, WebElement element) {
 		WebDriverEvent event = new WebDriverEvent(Type.BeforeGather, eventNumber, Cmd.getScreenshotAsByElement);
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setParam1(target.toString());
@@ -1231,7 +1231,7 @@ public class EventDispatcher {
 			listener.beforeGetScreenshotAsByElement(event, target, element);
 	}
 
-	public <X, T extends WebElement> void afterGetScreenshotAsByElement(OutputType<X> target, X screenshot, WebElement element) {
+	public <X> void afterGetScreenshotAsByElement(OutputType<X> target, X screenshot, WebElement element) {
 		WebDriverEvent event = new WebDriverEvent(Type.AfterGather, eventNumber, Cmd.getScreenshotAsByElement);
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setParam1(target.toString());

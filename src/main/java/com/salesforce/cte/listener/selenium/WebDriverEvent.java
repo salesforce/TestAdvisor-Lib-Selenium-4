@@ -393,7 +393,7 @@ public class WebDriverEvent {
 		timeElapsedEvent = System.nanoTime() - timeMarkerElapsedAction;
 	}
 
-	public static <T extends WebElement> String getLocatorFromWebElement(T elem) {
+	public static String getLocatorFromWebElement(WebElement elem) {
 		return (elem != null) ? getLocatorFromWebElement(elem.toString()) : null;
 	}
 
