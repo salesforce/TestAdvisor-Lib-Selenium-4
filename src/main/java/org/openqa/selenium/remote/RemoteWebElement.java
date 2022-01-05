@@ -241,40 +241,36 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 	}
 
 	@Override
-	public <T extends WebElement> List<T> findElements(By locator) {
+	public List<WebElement> findElements(By locator) {
 		return parent.findElements(this, (using, value) -> FIND_CHILD_ELEMENTS(getId(), using, String.valueOf(value)),
 				locator);
 	}
 
 	@Override
-	public <T extends WebElement> T findElement(By locator) {
+	public WebElement findElement(By locator) {
 		return parent.findElement(this, (using, value) -> FIND_CHILD_ELEMENT(getId(), using, String.valueOf(value)),
 				locator);
 	}
 
 	/**
 	 * @deprecated Rely on using {@link By.Remotable} instead
-	 * @param <T>   WebElement or any type extending WebElement to support
-	 *              customized WebElement classes
 	 * @param using type of locator
 	 * @param value locator
 	 * @return UnsupportedOperationException because this method is no longer supported
 	 */
 	@Deprecated
-	protected <T extends WebElement> T findElement(String using, String value) {
+	protected WebElement findElement(String using, String value) {
 		throw new UnsupportedOperationException("`findElement` has been replaced by usages of " + By.Remotable.class);
 	}
 
 	/**
 	 * @deprecated Rely on using {@link By.Remotable} instead
-	 * @param <T>   WebElement or any type extending WebElement to support
-	 *              customized WebElement classes
 	 * @param using type of locator
 	 * @param value locator
 	 * @return UnsupportedOperationException because this method is no longer supported
 	 */
 	@Deprecated
-	protected <T extends WebElement> List<T> findElements(String using, String value) {
+	protected List<WebElement> findElements(String using, String value) {
 		throw new UnsupportedOperationException("`findElement` has been replaced by usages of " + By.Remotable.class);
 	}
 
