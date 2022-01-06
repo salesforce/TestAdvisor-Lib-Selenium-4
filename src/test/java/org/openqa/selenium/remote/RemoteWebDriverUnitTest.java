@@ -18,17 +18,16 @@
 package org.openqa.selenium.remote;
 
 import static java.util.Collections.EMPTY_MAP;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ImmutableCapabilities;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,7 +41,8 @@ public class RemoteWebDriverUnitTest {
 
     RemoteWebDriver driver = new RemoteWebDriver(executor, new ImmutableCapabilities());
     List<WebElement> result = driver.findElements(By.id("id"));
-    assertThat(result).isNotNull().isEmpty();
+    Assert.assertNotNull(result);
+    Assert.assertTrue(result.isEmpty());
   }
 
   @Test
@@ -55,19 +55,20 @@ public class RemoteWebDriverUnitTest {
     element.setId("unique");
 
     List<WebElement> result = element.findElements(By.id("id"));
-    assertThat(result).isNotNull().isEmpty();
+    Assert.assertNotNull(result);
+    Assert.assertTrue(result.isEmpty());
   }
 
-  @Test
+  @Test(expectedExceptions = { NoSuchElementException.class } )
   public void throwsIfRemoteEndReturnsNullFromFindElement() throws IOException {
     CommandExecutor executor = prepareExecutorMock();
 
     RemoteWebDriver driver = new RemoteWebDriver(executor, new ImmutableCapabilities());
-    assertThatExceptionOfType(NoSuchElementException.class)
-        .isThrownBy(() -> driver.findElement(By.id("id")));
+
+    driver.findElement(By.id("id"));
   }
 
-  @Test
+  @Test(expectedExceptions = { NoSuchElementException.class } )
   public void throwIfRemoteEndReturnsNullFromFindChild() throws IOException {
     CommandExecutor executor = prepareExecutorMock();
 
@@ -76,8 +77,7 @@ public class RemoteWebDriverUnitTest {
     element.setParent(driver);
     element.setId("unique");
 
-    assertThatExceptionOfType(NoSuchElementException.class)
-        .isThrownBy(() -> element.findElement(By.id("id")));
+    driver.findElement(By.id("id"));
   }
 
   private CommandExecutor prepareExecutorMock() throws IOException {
