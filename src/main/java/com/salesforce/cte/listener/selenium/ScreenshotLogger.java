@@ -120,7 +120,7 @@ public class ScreenshotLogger extends AbstractEventListener {
         logEntries.add(event);
 		if (TestAdvisorConfiguration.getIsScreenshotCaptureEnabled()){
 			File file=tss.getScreenshotAs(OutputType.FILE);
-			TestEvent testEvent = createTestEvent(event,Level.SEVERE);
+			TestEvent testEvent = createTestEvent(event,Level.INFO);
 			testEvent.setStreenshotPath(file.getAbsolutePath());
 			administrator.getTestCaseExecution().appendEvent(testEvent);
 		}
