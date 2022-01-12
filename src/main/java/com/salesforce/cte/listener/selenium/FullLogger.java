@@ -33,6 +33,7 @@ import org.openqa.selenium.devtools.v96.network.model.Headers;
 import org.openqa.selenium.interactions.Coordinates;
 import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.print.PrintOptions;
+import org.openqa.selenium.remote.Augmenter;
 
 import com.salesforce.cte.listener.selenium.WebDriverEvent.Cmd;
 
@@ -52,12 +53,14 @@ public class FullLogger extends AbstractEventListener {
 	private DevTools devTools;
 
 	public FullLogger(WebDriver driver){
+		driver = new Augmenter().augment(driver);
 		devTools = ((HasDevTools) driver).getDevTools();
 		devTools.createSession();
 	}
 
 	@Override
 	public void setWebDriver(WebDriver driver){
+		driver = new Augmenter().augment(driver);
 		devTools = ((HasDevTools) driver).getDevTools();
 		devTools.createSession();
 	}
