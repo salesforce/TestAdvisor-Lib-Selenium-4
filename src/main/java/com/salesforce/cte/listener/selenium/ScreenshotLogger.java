@@ -28,6 +28,7 @@ public class ScreenshotLogger extends AbstractEventListener {
         this.tss = (TakesScreenshot)driver;
     }
 
+	@Override
 	public void setWebDriver(WebDriver driver){
 		this.tss = (TakesScreenshot)driver;
 	}

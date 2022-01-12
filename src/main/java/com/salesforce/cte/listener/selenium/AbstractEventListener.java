@@ -32,6 +32,7 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Pdf;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
 import org.openqa.selenium.interactions.Coordinates;
@@ -58,6 +59,9 @@ public abstract class AbstractEventListener implements IEventListener {
 	@JsonProperty("logEntries")
 	protected List<WebDriverEvent> logEntries = new ArrayList<>();
 	protected TestAdvisorAdministrator administrator = TestAdvisorAdministrator.getInstance();
+
+	public void setWebDriver(WebDriver driver){
+	}
 
 	/*--------------------------------------------------------------------
 	 * Section for all commands called directly from WebDriver object.

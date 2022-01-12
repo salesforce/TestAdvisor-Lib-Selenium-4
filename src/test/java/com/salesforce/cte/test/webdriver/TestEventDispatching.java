@@ -32,7 +32,6 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import com.salesforce.cte.admin.TestAdvisorAdministrator;
-import com.salesforce.cte.common.JsonHelper;
 import com.salesforce.cte.listener.selenium.EventDispatcher;
 import com.salesforce.cte.listener.selenium.FullLogger;
 import com.salesforce.cte.listener.selenium.IEventListener;
@@ -415,18 +414,6 @@ public class TestEventDispatching {
 		we.getScreenshotAs(OutputType.FILE);
 		assertNumOfLogEntries("takeScreenshots", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 6);
 		assertEquals(numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size());
-	}
-
-	@Test(priority = 2)
-	public void testWriteEventsToDisk() {
-		WebElement we = wd.findElement(By.id("someId"));
-		assertNotNull(we);
-		final long timeStamp = System.currentTimeMillis();
-		try {
-			JsonHelper.toFile(timeStamp +".json", fullLogger.getListOfEventsRecorded());
-		} catch (Exception e) {
-			Assert.fail("writing full log details failed", e);
-		}
 	}
 
 	@Test(priority = 2)
