@@ -23,10 +23,6 @@ public class ScreenshotLogger extends AbstractEventListener {
 	private ThreadLocal<String> cachedSendKeysLocator = new ThreadLocal<>();
     
     private TakesScreenshot tss;
-    
-    public ScreenshotLogger(WebDriver driver){
-        this.tss = (TakesScreenshot)driver;
-    }
 
 	@Override
 	public void setWebDriver(WebDriver driver){

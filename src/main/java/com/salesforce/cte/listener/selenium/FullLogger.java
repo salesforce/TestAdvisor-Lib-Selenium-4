@@ -50,19 +50,11 @@ import com.salesforce.cte.listener.selenium.WebDriverEvent.Cmd;
  * @since 1.0
  */
 public class FullLogger extends AbstractEventListener {
-	private DevTools devTools;
 
-	public FullLogger(WebDriver driver){
-		driver = new Augmenter().augment(driver);
-		devTools = ((HasDevTools) driver).getDevTools();
-		devTools.createSession();
-	}
-
+	private WebDriver driver;
 	@Override
 	public void setWebDriver(WebDriver driver){
-		driver = new Augmenter().augment(driver);
-		devTools = ((HasDevTools) driver).getDevTools();
-		devTools.createSession();
+		this.driver = driver;
 	}
 	/*--------------------------------------------------------------------
 	 * Section for all commands called directly from WebDriver object.
@@ -102,6 +94,9 @@ public class FullLogger extends AbstractEventListener {
 	@Override
 	public void beforeGet(WebDriverEvent event, String url) {
 		logEntries.add(event);
+		driver = new Augmenter().augment(driver);
+		DevTools devTools = ((HasDevTools) driver).getDevTools();
+		devTools.createSession();
 		devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
 		HashMap<String, Object> headers = new HashMap<>();
 		String traceID = administrator.getTestCaseExecution().getTraceId();

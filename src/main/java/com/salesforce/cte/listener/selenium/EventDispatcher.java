@@ -46,17 +46,15 @@ public class EventDispatcher {
 	private WebDriverEvent currentEvent = null;
 	private int eventNumber = 0;
 	
-	public static EventDispatcher getInstance(WebDriver driver) {
+	public static EventDispatcher getInstance() {
 		if (instance == null)
-			instance = new EventDispatcher(driver);
-		if (driver != null)
-			instance.setWebDriver(driver);
+			instance = new EventDispatcher();
 		return instance;
 	}
 
-	private EventDispatcher(WebDriver driver) {
-		eventListeners.add(new FullLogger(driver));
-		eventListeners.add(new ScreenshotLogger(driver));
+	private EventDispatcher() {
+		eventListeners.add(new FullLogger());
+		eventListeners.add(new ScreenshotLogger());
 	}
 
 	public void setWebDriver(WebDriver driver){

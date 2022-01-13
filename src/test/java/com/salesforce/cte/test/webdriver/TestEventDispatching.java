@@ -58,7 +58,7 @@ public class TestEventDispatching {
 		MockCommandExecutor mce = new MockCommandExecutor();
 		wd = new MockRemoteWebDriver(mce, mcap);
 		mce.setRemoteWebDriver(wd);
-		List<IEventListener> eventListeners = EventDispatcher.getInstance(wd).getImmutableListOfEventListeners();
+		List<IEventListener> eventListeners = EventDispatcher.getInstance().getImmutableListOfEventListeners();
 		for (IEventListener listener : eventListeners) {
 			if (listener instanceof FullLogger) {
 				fullLogger = (FullLogger) listener;
@@ -74,7 +74,7 @@ public class TestEventDispatching {
 	public void testOnExceptionWithNoCurrentEventSet() {
 		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
 		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
-		EventDispatcher.getInstance(wd).onException(null, null);
+		EventDispatcher.getInstance().onException(null, null);
 		assertNumOfLogEntries("click", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 0);
 		assertNumOfLogEntries("click", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
 	}
