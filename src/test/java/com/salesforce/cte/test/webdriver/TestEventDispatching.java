@@ -32,7 +32,6 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 import com.salesforce.cte.admin.TestAdvisorAdministrator;
-import com.salesforce.cte.common.JsonHelper;
 import com.salesforce.cte.listener.selenium.EventDispatcher;
 import com.salesforce.cte.listener.selenium.FullLogger;
 import com.salesforce.cte.listener.selenium.IEventListener;
@@ -59,7 +58,7 @@ public class TestEventDispatching {
 		MockCommandExecutor mce = new MockCommandExecutor();
 		wd = new MockRemoteWebDriver(mce, mcap);
 		mce.setRemoteWebDriver(wd);
-		List<IEventListener> eventListeners = EventDispatcher.getInstance(wd).getImmutableListOfEventListeners();
+		List<IEventListener> eventListeners = EventDispatcher.getInstance().getImmutableListOfEventListeners();
 		for (IEventListener listener : eventListeners) {
 			if (listener instanceof FullLogger) {
 				fullLogger = (FullLogger) listener;
@@ -75,7 +74,7 @@ public class TestEventDispatching {
 	public void testOnExceptionWithNoCurrentEventSet() {
 		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
 		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
-		EventDispatcher.getInstance(wd).onException(null, null);
+		EventDispatcher.getInstance().onException(null, null);
 		assertNumOfLogEntries("click", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 0);
 		assertNumOfLogEntries("click", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
 	}
@@ -415,18 +414,6 @@ public class TestEventDispatching {
 		we.getScreenshotAs(OutputType.FILE);
 		assertNumOfLogEntries("takeScreenshots", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 6);
 		assertEquals(numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size());
-	}
-
-	@Test(priority = 2)
-	public void testWriteEventsToDisk() {
-		WebElement we = wd.findElement(By.id("someId"));
-		assertNotNull(we);
-		final long timeStamp = System.currentTimeMillis();
-		try {
-			JsonHelper.toFile(timeStamp +".json", fullLogger.getListOfEventsRecorded());
-		} catch (Exception e) {
-			Assert.fail("writing full log details failed", e);
-		}
 	}
 
 	@Test(priority = 2)

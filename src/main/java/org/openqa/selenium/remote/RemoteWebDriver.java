@@ -106,7 +106,7 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 	private static final String BORDER_COLORING_POSTFIX = "'";
 	private static final String IGNORE_COMMAND_TAG = "testadvisor";
 
-	private EventDispatcher eventDispatcher = EventDispatcher.getInstance(this);
+	private EventDispatcher eventDispatcher = EventDispatcher.getInstance();
 
 	// TODO: This static logger should be unified with the per-instance localLogs
 	private static final Logger logger = Logger.getLogger(RemoteWebDriver.class.getName());
@@ -159,6 +159,7 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 
 			throw e;
 		}
+		eventDispatcher.setWebDriver(this);
 	}
 
 	private static URL getDefaultServerURL() {

@@ -10,9 +10,12 @@ package com.salesforce.cte.listener.selenium;
 import java.io.File;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
@@ -21,11 +24,17 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Pdf;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.Rectangle;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.WindowType;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.HasDevTools;
+import org.openqa.selenium.devtools.v96.network.Network;
+import org.openqa.selenium.devtools.v96.network.model.Headers;
 import org.openqa.selenium.interactions.Coordinates;
 import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.print.PrintOptions;
+import org.openqa.selenium.remote.Augmenter;
 
 import com.salesforce.cte.listener.selenium.WebDriverEvent.Cmd;
 
@@ -42,6 +51,13 @@ import com.salesforce.cte.listener.selenium.WebDriverEvent.Cmd;
  * @since 1.0
  */
 public class FullLogger extends AbstractEventListener {
+	private static final Logger LOGGER = Logger.getLogger( Logger.GLOBAL_LOGGER_NAME );
+	
+	private WebDriver driver;
+	@Override
+	public void setWebDriver(WebDriver driver){
+		this.driver = driver;
+	}
 	/*--------------------------------------------------------------------
 	 * Section for all commands called directly from WebDriver object.
 	 *--------------------------------------------------------------------*/
@@ -80,6 +96,19 @@ public class FullLogger extends AbstractEventListener {
 	@Override
 	public void beforeGet(WebDriverEvent event, String url) {
 		logEntries.add(event);
+		driver = new Augmenter().augment(driver);
+		if (driver instanceof HasDevTools){
+			DevTools devTools = ((HasDevTools) driver).getDevTools();
+			devTools.createSession();
+			devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+			HashMap<String, Object> headers = new HashMap<>();
+			String traceID = administrator.getTestCaseExecution().getTraceId();
+			LOGGER.log(Level.INFO, "Set trace id as {0}", traceID);
+			headers.put("x-b3-traceid", traceID);
+			headers.put("x-b3-spanid", traceID);
+			headers.put("x-b3-sampled", "1");
+			devTools.send(Network.setExtraHTTPHeaders(new Headers(headers)));
+		}
 	}
 
 	@Override

@@ -54,7 +54,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 	protected RemoteWebDriver parent;
 	protected FileDetector fileDetector;
 
-	private EventDispatcher eventDispatcher = EventDispatcher.getInstance(parent);
+	private EventDispatcher eventDispatcher = EventDispatcher.getInstance();
 
 	protected void setFoundBy(SearchContext foundFrom, String locator, String term) {
 		this.foundBy = String.format("[%s] -> %s: %s", foundFrom, locator, term);
