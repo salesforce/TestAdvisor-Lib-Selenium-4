@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
@@ -50,7 +51,8 @@ import com.salesforce.cte.listener.selenium.WebDriverEvent.Cmd;
  * @since 1.0
  */
 public class FullLogger extends AbstractEventListener {
-
+	private static final Logger LOGGER = Logger.getLogger( Logger.GLOBAL_LOGGER_NAME );
+	
 	private WebDriver driver;
 	@Override
 	public void setWebDriver(WebDriver driver){
@@ -95,15 +97,18 @@ public class FullLogger extends AbstractEventListener {
 	public void beforeGet(WebDriverEvent event, String url) {
 		logEntries.add(event);
 		driver = new Augmenter().augment(driver);
-		DevTools devTools = ((HasDevTools) driver).getDevTools();
-		devTools.createSession();
-		devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
-		HashMap<String, Object> headers = new HashMap<>();
-		String traceID = administrator.getTestCaseExecution().getTraceId();
-		headers.put("x-b3-traceid", traceID);
-		headers.put("x-b3-spanid", traceID);
-		headers.put("x-b3-sampled", "1");
-		devTools.send(Network.setExtraHTTPHeaders(new Headers(headers)));
+		if (driver instanceof HasDevTools){
+			DevTools devTools = ((HasDevTools) driver).getDevTools();
+			devTools.createSession();
+			devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+			HashMap<String, Object> headers = new HashMap<>();
+			String traceID = administrator.getTestCaseExecution().getTraceId();
+			LOGGER.log(Level.INFO, "Set trace id as {0}", traceID);
+			headers.put("x-b3-traceid", traceID);
+			headers.put("x-b3-spanid", traceID);
+			headers.put("x-b3-sampled", "1");
+			devTools.send(Network.setExtraHTTPHeaders(new Headers(headers)));
+		}
 	}
 
 	@Override
