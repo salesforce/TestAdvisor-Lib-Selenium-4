@@ -1,14 +1,20 @@
 package com.salesforce.cte.test.webdriver;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.salesforce.cte.admin.TestAdvisorAdministrator;
 import com.salesforce.cte.listener.testng.TestListener;
 
 import org.openqa.selenium.By;
@@ -29,77 +35,107 @@ import io.github.bonigarcia.wdm.WebDriverManager;
 public class WebDriverIntegrationTest {
     
     @Test
-    public void testChromeWebDriver(){
-        WebDriverManager.chromedriver().setup();
-        WebDriver driver = new ChromeDriver(); 
+    public void testChromeWebDriver() throws IOException{
+        try(ByteArrayOutputStream os = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(os)){
+            System.setOut(ps);
+            System.setErr(ps);
 
-        driver.get("https://test.salesforce.com/");  
-        FluentWait<WebDriver> fluentWait = new FluentWait<>(driver)
-                                                .withTimeout(Duration.ofSeconds(30))
-                                                .pollingEvery(Duration.ofMillis(500));      
-        fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+            WebDriverManager.chromedriver().setup();
+            WebDriver driver = new ChromeDriver(); 
 
-        driver.get("https://login.salesforce.com/");    
-        fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+            driver.get("https://test.salesforce.com/");  
+            FluentWait<WebDriver> fluentWait = new FluentWait<>(driver)
+                                                    .withTimeout(Duration.ofSeconds(30))
+                                                    .pollingEvery(Duration.ofMillis(500));      
+            fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
 
-        driver.quit();
-        assertTrue(true);
+            driver.get("https://login.salesforce.com/");    
+            fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+            driver.quit();
+            String traceId = TestAdvisorAdministrator.getInstance().getTestCaseExecution().getTraceId();
+
+            Pattern pattern = Pattern.compile("INFO: Set trace id as (\\w{16})");
+            Matcher matcher = pattern.matcher(os.toString());
+            assertTrue(matcher.find());
+            assertEquals("INFO: Set trace id as " + traceId, matcher.group(0));
+        }
     }
 
     @Test
-    public void testRemoteWebDriver() throws IOException{
-        ChromeDriverService service;
+    public void testChromeDriverService() throws IOException{
+        try(ByteArrayOutputStream os = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(os)){
+            System.setOut(ps);
+            System.setErr(ps);
 
-        service = new ChromeDriverService.Builder()       
-              .usingDriverExecutable(new File("/Users/ytao/source/TestAdvisor-Lib-Selenium-4/lib/chromedriver"))         
-              .usingAnyFreePort()         
-              .build();     
+            ChromeDriverService service;
 
-        service.start();   
+            service = new ChromeDriverService.Builder()       
+                .usingDriverExecutable(new File("/Users/ytao/source/TestAdvisor-Lib-Selenium-4/lib/chromedriver"))         
+                .usingAnyFreePort()         
+                .build();     
 
-        ChromeOptions chromeOptions = new ChromeOptions();
-        WebDriver driver = RemoteWebDriver.builder().address(service.getUrl()).oneOf(chromeOptions).build();
-        //RemoteWebDriver driver = new RemoteWebDriver(service.getUrl(), new ChromeOptions());
+            service.start();   
 
-        driver.get("https://test.salesforce.com/");  
-        FluentWait<WebDriver> fluentWait = new FluentWait<>(driver)
-                                                .withTimeout(Duration.ofSeconds(30))
-                                                .pollingEvery(Duration.ofMillis(500));      
-        fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+            ChromeOptions chromeOptions = new ChromeOptions();
+            WebDriver driver = RemoteWebDriver.builder().address(service.getUrl()).oneOf(chromeOptions).build();
 
-        driver.get("https://login.salesforce.com/");    
-        fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+            driver.get("https://test.salesforce.com/");  
+            FluentWait<WebDriver> fluentWait = new FluentWait<>(driver)
+                                                    .withTimeout(Duration.ofSeconds(30))
+                                                    .pollingEvery(Duration.ofMillis(500));      
+            fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
 
-        driver.quit();
-        assertTrue(true);
+            driver.get("https://login.salesforce.com/");    
+            fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+
+            driver.quit();
+
+            Pattern pattern = Pattern.compile("INFO: Set trace id as (\\w{16})");
+            Matcher matcher = pattern.matcher(os.toString());
+            assertFalse(matcher.find());
+        }
     }
 
     @Test
-    public void testBrowserStack() throws MalformedURLException {
-        String remoteUrl = "https://danstead_L51Mp9:ReCUgTG8Qf2srkgV1Ygs@hub-cloud.browserstack.com/wd/hub";
+    public void testBrowserStack() throws IOException {
+        try(ByteArrayOutputStream os = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(os)){
+            System.setOut(ps);
+            System.setErr(ps);
 
-        //ChromeOptions browserOptions = new ChromeOptions();
-        DesiredCapabilities capabilities = new DesiredCapabilities();
-        HashMap<String, Object> browserstackOptions = new HashMap<String, Object>();
-        browserstackOptions.put("os", "OS X");
-        browserstackOptions.put("osVersion", "Mojave");
-        browserstackOptions.put("sessionName", "Network Interception Test");
-        browserstackOptions.put("seleniumVersion", "4.0.0");
-        browserstackOptions.put("seleniumCdp", true);
-        capabilities.setCapability("bstack:options", browserstackOptions);
+            String remoteUrl = "https://danstead_L51Mp9:ReCUgTG8Qf2srkgV1Ygs@hub-cloud.browserstack.com/wd/hub";
 
-        WebDriver driver = new RemoteWebDriver(new URL(remoteUrl), capabilities);
-		
-        driver.get("https://test.salesforce.com/");  
-        FluentWait<WebDriver> fluentWait = new FluentWait<>(driver)
-                                                .withTimeout(Duration.ofSeconds(30))
-                                                .pollingEvery(Duration.ofMillis(500));      
-        fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+            //ChromeOptions browserOptions = new ChromeOptions();
+            DesiredCapabilities capabilities = new DesiredCapabilities();
+            HashMap<String, Object> browserstackOptions = new HashMap<String, Object>();
+            browserstackOptions.put("os", "OS X");
+            browserstackOptions.put("osVersion", "Mojave");
+            browserstackOptions.put("sessionName", "Network Interception Test");
+            browserstackOptions.put("seleniumVersion", "4.0.0");
+            browserstackOptions.put("seleniumCdp", true);
+            capabilities.setCapability("bstack:options", browserstackOptions);
 
-        driver.get("https://login.salesforce.com/");    
-        fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+            WebDriver driver = new RemoteWebDriver(new URL(remoteUrl), capabilities);
+            
+            driver.get("https://test.salesforce.com/");  
+            FluentWait<WebDriver> fluentWait = new FluentWait<>(driver)
+                                                    .withTimeout(Duration.ofSeconds(30))
+                                                    .pollingEvery(Duration.ofMillis(500));      
+            fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
 
-        driver.quit();
-        assertTrue(true);
+            driver.get("https://login.salesforce.com/");    
+            fluentWait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Login")));
+
+            driver.quit();
+            
+            String traceId = TestAdvisorAdministrator.getInstance().getTestCaseExecution().getTraceId();
+
+            Pattern pattern = Pattern.compile("INFO: Set trace id as (\\w{16})");
+            Matcher matcher = pattern.matcher(os.toString());
+            assertTrue(matcher.find());
+            assertEquals("INFO: Set trace id as " + traceId, matcher.group(0));
+        }
     }
 }
