@@ -17,14 +17,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.logging.Level;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Cookie;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.MutableCapabilities;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.WebDriverException;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.remote.CapabilityType;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -283,6 +276,30 @@ public class TestEventDispatching {
 		assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
 		assertNumOfLogEntries("isEnabled", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 3);
 		assertNumOfLogEntries("isEnabled", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetCssValue() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		Assert.assertEquals(we.getCssValue("someCssValue"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertNumOfLogEntries("getCssValue", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("getCssValue", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetShadowRoot() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		SearchContext sc = we.getShadowRoot();
+		Assert.assertNotNull(sc);
+		Assert.assertTrue(sc == wd);
+		assertNumOfLogEntries("getShadowRoot", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("getShadowRoot", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
 	}
 
 	@Test(priority = 2)

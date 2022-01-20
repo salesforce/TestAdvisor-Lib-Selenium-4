@@ -133,6 +133,10 @@ public class MockCommandExecutor implements CommandExecutor {
 			} else {
 				response.setValue(Boolean.valueOf(true));
 			}
+		} else if (GET_ELEMENT_SHADOW_ROOT.equals(command.getName())){
+			response.setValue(webDriver);
+		} else if (GET_ELEMENT_VALUE_OF_CSS_PROPERTY.equals(command.getName())){
+			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (DISMISS_ALERT.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (ACCEPT_ALERT.equals(command.getName())){
