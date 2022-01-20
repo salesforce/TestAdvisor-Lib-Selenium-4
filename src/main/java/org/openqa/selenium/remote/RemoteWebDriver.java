@@ -336,20 +336,21 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 	@Override
 	public <X> X getScreenshotAs(OutputType<X> outputType) throws WebDriverException {
 		eventDispatcher.beforeGetScreenshotAs(outputType);
+		X screenshot = getScreenshotAsForTestAdvisor(outputType);
+		eventDispatcher.afterGetScreenshotAs(outputType, screenshot);
+		return screenshot;
+	}
+
+	public <X> X getScreenshotAsForTestAdvisor(OutputType<X> outputType) throws WebDriverException {
 		Response response = execute(DriverCommand.SCREENSHOT);
 		Object result = response.getValue();
 		if (result instanceof String) {
 			String base64EncodedPng = (String) result;
-			X screenshot = outputType.convertFromBase64Png(base64EncodedPng);
-			eventDispatcher.afterGetScreenshotAs(outputType, screenshot);
-			return screenshot;
+			return outputType.convertFromBase64Png(base64EncodedPng);
 		} else if (result instanceof byte[]) {
 			String base64EncodedPng = new String((byte[]) result);
-			X screenshot = outputType.convertFromBase64Png(base64EncodedPng);
-			eventDispatcher.afterGetScreenshotAs(outputType, screenshot);
-			return screenshot;
+			return outputType.convertFromBase64Png(base64EncodedPng);
 		} else {
-			eventDispatcher.afterGetScreenshotAs(outputType, null);
 			throw new RuntimeException(String.format("Unexpected result for %s command: %s", DriverCommand.SCREENSHOT,
 					result == null ? "null" : result.getClass().getName() + " instance"));
 		}

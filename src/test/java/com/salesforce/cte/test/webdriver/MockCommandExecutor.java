@@ -12,6 +12,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.CommandExecutor;
@@ -29,9 +30,12 @@ import static org.testng.Assert.assertNotNull;
  *
  */
 public class MockCommandExecutor implements CommandExecutor {
-	public static String STATE_OK = "OK";
-	public static String STRING_ALLISWELL_VALUE = "All is well";
-	public static String STATE_EXCEPTION = "Exception";
+	public static final String SCRIPT_EXECUTED = "script executed";
+	public static final String ELEMENT_ID_PREFIX = "Elem";
+	public static final String CHILD_ELEMENT_ID_PREFIX = "ChildElem";
+	public static final String STATE_OK = "OK";
+	public static final String STRING_ALLISWELL_VALUE = "All is well";
+	public static final String STATE_EXCEPTION = "Exception";
 	
 	private static boolean doTriggerWebDriverException;
 	private static boolean doUseSpecificReturnValue;
@@ -61,24 +65,24 @@ public class MockCommandExecutor implements CommandExecutor {
     	response.setState(STATE_OK);
    	
 	    if (FIND_ELEMENT.equals(command.getName())) {
-	    	id = "Elem" + System.currentTimeMillis();
+	    	id = ELEMENT_ID_PREFIX + System.currentTimeMillis();
 	    	RemoteWebElement rwe = new RemoteWebElement();
 	    	rwe.setId(id);
 	    	rwe.setParent(webDriver);
 	    	response.setValue(rwe);
 	    } else if (CLICK_ELEMENT.equals(command.getName())) {
 	    	// zero argument command
-	    	response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 	    } else if (FIND_CHILD_ELEMENT.equals(command.getName())) {
 	    	// one argument command
-	    	id = "ChildElem" + System.currentTimeMillis();
+	    	id = CHILD_ELEMENT_ID_PREFIX + System.currentTimeMillis();
 	    	RemoteWebElement rwe = new RemoteWebElement();
 	    	rwe.setId(id);
 	    	rwe.setParent(webDriver);
 	    	response.setValue(rwe);
 	    } else if (GET_TITLE.equals(command.getName())) {
 	    	// zero argument command
-	    	response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 	    } else if (GET.equals(command.getName())) {
 	    	// one argument command
 	    	String url = getStringValueFromParameters(command, "url");
@@ -89,10 +93,10 @@ public class MockCommandExecutor implements CommandExecutor {
 	    	if (script.contains("style.border='3px solid")) {
 	    		response.setValue("highlighted web element");
 	    	} else {
-	    		response.setValue("script executed");
+	    		response.setValue(SCRIPT_EXECUTED);
 	    	}
 	    } else if (EXECUTE_ASYNC_SCRIPT.equals(command.getName())){
-			response.setValue("script executed");
+			response.setValue(SCRIPT_EXECUTED);
 		} else if (NEW_SESSION.equals(command.getName())) {
 	    	Map<String, Object> rawCapabilities = new HashMap<>();
 	    	response.setValue(rawCapabilities);
@@ -133,6 +137,37 @@ public class MockCommandExecutor implements CommandExecutor {
 			} else {
 				response.setValue(Boolean.valueOf(true));
 			}
+		} else if (IS_ELEMENT_DISPLAYED.equals(command.getName())){
+			if (doUseSpecificReturnValue) {
+				// reset flag
+				doUseSpecificReturnValue = false;
+				// use return value of wrong type
+				response.setValue(stringReturnValue);
+			} else {
+				response.setValue(Boolean.valueOf(true));
+			}
+		} else if (GET_ELEMENT_LOCATION.equals(command.getName())){
+			Map<String, Object> rawPoint = new HashMap<>();
+			rawPoint.put("x", 0);
+			rawPoint.put("y", 0);
+			response.setValue(rawPoint);
+		} else if (GET_ELEMENT_SIZE.equals(command.getName())){
+			Map<String, Object> rawSize = new HashMap<>();
+			rawSize.put("width", 0);
+			rawSize.put("height", 0);
+			response.setValue(rawSize);
+		} else if (GET_ELEMENT_RECT.equals(command.getName())){
+			Map<String, Object> rawRect = new HashMap<>();
+			rawRect.put("x", (Number) 0);
+			rawRect.put("y", (Number) 0);
+			rawRect.put("width", (Number) 0);
+			rawRect.put("height", (Number) 0);
+			response.setValue(rawRect);
+		} else if (GET_ELEMENT_LOCATION_ONCE_SCROLLED_INTO_VIEW.equals(command.getName())){
+			Map<String, Object> rawPoint = new HashMap<>();
+			rawPoint.put("x", 0);
+			rawPoint.put("y", 0);
+			response.setValue(rawPoint);
 		} else if (GET_ELEMENT_SHADOW_ROOT.equals(command.getName())){
 			response.setValue(webDriver);
 		} else if (GET_ELEMENT_VALUE_OF_CSS_PROPERTY.equals(command.getName())){
@@ -159,6 +194,9 @@ public class MockCommandExecutor implements CommandExecutor {
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (GET_PAGE_SOURCE.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (CLOSE.equals(command.getName())){
+			// zero argument command
+			response.setValue(STATE_OK);
 		} else if (GET_CURRENT_WINDOW_HANDLE.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (DELETE_ALL_COOKIES.equals(command.getName())){
@@ -173,8 +211,11 @@ public class MockCommandExecutor implements CommandExecutor {
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (SET_TIMEOUT.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
-		} 
-		else {
+		} else if (GET_ALERT_TEXT.equals(command.getName())) {
+			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (DISMISS_ALERT.equals(command.getName())) {
+			response.setValue(STATE_OK);
+		} else {
 	    	System.out.println(String.format("Command %s not yet covered by %s", command.getName(), this.getClass().getName()));
 	    }
 		return response;

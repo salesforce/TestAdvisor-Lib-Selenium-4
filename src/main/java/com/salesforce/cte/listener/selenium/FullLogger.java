@@ -623,9 +623,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterGetSizeByElement(WebDriverEvent event, Dimension dimension, WebElement element) {
-		logEntries.add(event);
-	}
+	public void afterGetSizeByElement(WebDriverEvent event, Dimension dimension, WebElement element) { logEntries.add(event); }
 
 	@Override
 	public void beforeGetRect(WebDriverEvent event, WebElement element) {
@@ -933,29 +931,19 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterGetCoordinates(WebDriverEvent event, Coordinates coordinates, WebElement element) {
-		logEntries.add(event);
-	}
+	public void afterGetCoordinates(WebDriverEvent event, Coordinates coordinates, WebElement element) { logEntries.add(event); }
 
 	@Override
-	public <X> void beforeGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, WebElement element) {
-		logEntries.add(event);
-	}
+	public <X> void beforeGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, WebElement element) { logEntries.add(event); }
 
 	@Override
-	public <X> void afterGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, X screenshot, WebElement element) {
-		logEntries.add(event);
-	}
+	public <X> void afterGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, X screenshot, WebElement element) { logEntries.add(event); }
 
 	@Override
-	public void beforeUploadFile(WebDriverEvent event, WebElement element, File localFile) {
-		logEntries.add(event);
-	}
+	public void beforeUploadFile(WebDriverEvent event, WebElement element, File localFile) { logEntries.add(event); }
 
 	@Override
-	public void afterUploadFile(WebDriverEvent event, WebElement element, File localFile, String response) {
-		logEntries.add(event);
-	}
+	public void afterUploadFile(WebDriverEvent event, WebElement element, File localFile, String response) { logEntries.add(event); }
 
 	@Override
 	public void onException(WebDriverEvent event, Cmd cmd, Throwable issue) {
