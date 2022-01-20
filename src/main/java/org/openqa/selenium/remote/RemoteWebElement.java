@@ -49,6 +49,8 @@ import static org.openqa.selenium.remote.DriverCommand.FIND_CHILD_ELEMENTS;
 
 public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot, WrapsDriver {
 
+	private static final String RETURNED_VALUE_CANNOT_BE_CONVERTED_TO_BOOLEAN = "Returned value cannot be converted to Boolean: ";
+
 	private String foundBy;
 	protected String id;
 	protected RemoteWebDriver parent;
@@ -151,7 +153,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 		eventDispatcher.beforeGetDomProperty(name, this);
 		String value = stringValueOf(
 				execute(DriverCommand.GET_ELEMENT_DOM_PROPERTY(id, name)).getValue());
-		eventDispatcher.afterGetDomProperty(name, value, this);
+		eventDispatcher.afterGetDomProperty(name, value,this);
 		return value;
 	}
 
@@ -160,7 +162,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 		eventDispatcher.beforeGetDomAttribute(name, this);
 		String value = stringValueOf(
 				execute(DriverCommand.GET_ELEMENT_DOM_ATTRIBUTE(id, name)).getValue());
-		eventDispatcher.afterGetDomAttribute(name, value, this);
+		eventDispatcher.afterGetDomAttribute(name, value,this);
 		return value;
 	}
 
@@ -205,7 +207,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 			eventDispatcher.afterIsSelected(boolValue, this);
 			return boolValue;
 		} catch (ClassCastException ex) {
-			throw new WebDriverException("Returned value cannot be converted to Boolean: " + value, ex);
+			throw new WebDriverException(RETURNED_VALUE_CANNOT_BE_CONVERTED_TO_BOOLEAN + value, ex);
 		}
 	}
 
@@ -218,7 +220,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 			eventDispatcher.afterIsEnabled(boolValue, this);
 			return boolValue;
 		} catch (ClassCastException ex) {
-			throw new WebDriverException("Returned value cannot be converted to Boolean: " + value, ex);
+			throw new WebDriverException(RETURNED_VALUE_CANNOT_BE_CONVERTED_TO_BOOLEAN + value, ex);
 		}
 	}
 
@@ -348,7 +350,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 			}
 			return (Boolean) value;
 		} catch (ClassCastException ex) {
-			throw new WebDriverException("Returned value cannot be converted to Boolean: " + value, ex);
+			throw new WebDriverException(RETURNED_VALUE_CANNOT_BE_CONVERTED_TO_BOOLEAN + value, ex);
 		}
 	}
 

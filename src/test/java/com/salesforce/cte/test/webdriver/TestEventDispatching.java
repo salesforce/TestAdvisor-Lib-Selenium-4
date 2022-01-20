@@ -173,6 +173,119 @@ public class TestEventDispatching {
 	}
 
 	@Test(priority = 2)
+	public void testGetTagName() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		Assert.assertEquals(we.getTagName(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertNumOfLogEntries("getTagName", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("getTagName", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetDomProperty() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		Assert.assertEquals(we.getDomProperty("someDomProperty"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertNumOfLogEntries("getDomProperty", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("getDomProperty", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetDomAttribute() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		Assert.assertEquals(we.getDomAttribute("someDomAttribute"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertNumOfLogEntries("getDomAttribute", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("getDomAttribute", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetAriaRole() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		Assert.assertEquals(we.getAriaRole(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertNumOfLogEntries("getAriaRole", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("getAriaRole", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetAccessibleName() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		Assert.assertEquals(we.getAccessibleName(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertNumOfLogEntries("getAccessibleName", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("getAccessibleName", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testIsSelected() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		Assert.assertTrue(we.isSelected());
+		assertNumOfLogEntries("isSelected", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("isSelected", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testIsSelectedWithIncorrectReturnType() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		MockCommandExecutor.setReturnValue("This is not the right return type");
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		boolean wasExceptionThrown = false;
+		try {
+			we.isSelected();
+		} catch (WebDriverException wde) {
+			wasExceptionThrown = true;
+		}
+		assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
+		assertNumOfLogEntries("isSelected", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 3);
+		assertNumOfLogEntries("isSelected", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testIsEnabled() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		Assert.assertTrue(we.isEnabled());
+		assertNumOfLogEntries("isEnabled", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
+		assertNumOfLogEntries("isEnabled", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
+	public void testIsEnabledWithIncorrectReturnType() {
+		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		MockCommandExecutor.setReturnValue("This is not the right return type");
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		boolean wasExceptionThrown = false;
+		try {
+			we.isEnabled();
+		} catch (WebDriverException wde) {
+			wasExceptionThrown = true;
+		}
+		assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
+		assertNumOfLogEntries("isEnabled", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 3);
+		assertNumOfLogEntries("isEnabled", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+	}
+
+	@Test(priority = 2)
 	public void testSendKeysByElementSendingCharsOneByOne() {
 		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
 		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();

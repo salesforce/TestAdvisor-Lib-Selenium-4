@@ -993,7 +993,7 @@ public class EventDispatcher {
 			listener.beforeGetDomAttribute(event, name, element);
 	}
 
-	public void afterGetDomAttribute(String value, String name, WebElement element) {
+	public void afterGetDomAttribute(String name, String value, WebElement element) {
 		WebDriverEvent event = new WebDriverEvent(Type.AfterGather, eventNumber, Cmd.getDomAttribute);
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setParam1(name);
@@ -1011,7 +1011,7 @@ public class EventDispatcher {
 			listener.beforeGetDomProperty(event, name, element);
 	}
 
-	public void afterGetDomProperty(String value, String name, WebElement element) {
+	public void afterGetDomProperty(String name, String value, WebElement element) {
 		WebDriverEvent event = new WebDriverEvent(Type.AfterGather, eventNumber, Cmd.getDomProperty);
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setParam1(name);

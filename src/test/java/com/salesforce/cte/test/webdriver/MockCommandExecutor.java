@@ -34,6 +34,8 @@ public class MockCommandExecutor implements CommandExecutor {
 	public static String STATE_EXCEPTION = "Exception";
 	
 	private static boolean doTriggerWebDriverException;
+	private static boolean doUseSpecificReturnValue;
+	private static String stringReturnValue;
 
 	private RemoteWebDriver webDriver;
 	private String id;
@@ -103,6 +105,34 @@ public class MockCommandExecutor implements CommandExecutor {
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (CLEAR_ELEMENT.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (GET_ELEMENT_TAG_NAME.equals(command.getName())){
+			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (GET_ELEMENT_DOM_PROPERTY.equals(command.getName())){
+			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (GET_ELEMENT_DOM_ATTRIBUTE.equals(command.getName())){
+			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (GET_ELEMENT_ARIA_ROLE.equals(command.getName())){
+			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (GET_ELEMENT_ACCESSIBLE_NAME.equals(command.getName())){
+			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (IS_ELEMENT_SELECTED.equals(command.getName())){
+			if (doUseSpecificReturnValue) {
+				// reset flag
+				doUseSpecificReturnValue = false;
+				// use return value of wrong type
+				response.setValue(stringReturnValue);
+			} else {
+				response.setValue(Boolean.valueOf(true));
+			}
+		} else if (IS_ELEMENT_ENABLED.equals(command.getName())){
+			if (doUseSpecificReturnValue) {
+				// reset flag
+				doUseSpecificReturnValue = false;
+				// use return value of wrong type
+				response.setValue(stringReturnValue);
+			} else {
+				response.setValue(Boolean.valueOf(true));
+			}
 		} else if (DISMISS_ALERT.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (ACCEPT_ALERT.equals(command.getName())){
@@ -149,7 +179,12 @@ public class MockCommandExecutor implements CommandExecutor {
 	public static void setDoTriggerWebDriverException() {
 		doTriggerWebDriverException = true;
 	}
-	
+
+	public static void setReturnValue(String returnValue) {
+		doUseSpecificReturnValue = true;
+		stringReturnValue = returnValue;
+	}
+
 	private String getStringValueFromParameters(Command command, String key) {
 		String value = null;
 		if (command.getParameters() != null) {

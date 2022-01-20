@@ -512,14 +512,44 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
+	public void beforeGetDomProperty(WebDriverEvent event, String name, WebElement element) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterGetDomProperty(WebDriverEvent event, String value, String name, WebElement element) { logEntries.add(event); }
+
+	@Override
+	public void beforeGetDomAttribute(WebDriverEvent event, String name, WebElement element) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterGetDomAttribute(WebDriverEvent event, String value, String name, WebElement element) { logEntries.add(event); }
+
+	@Override
 	public void beforeGetAttribute(WebDriverEvent event, String name, WebElement element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetAttribute(WebDriverEvent event, String value, String name, WebElement element) {
+	public void afterGetAttribute(WebDriverEvent event, String value, String name, WebElement element) { logEntries.add(event);	}
+
+	@Override
+	public void beforeGetAriaRole(WebDriverEvent event, WebElement element) {
 		logEntries.add(event);
 	}
+
+	@Override
+	public void afterGetAriaRole(WebDriverEvent event, String value, WebElement element) { logEntries.add(event);	}
+
+	@Override
+	public void beforeGetAccessibleName(WebDriverEvent event, WebElement element) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterGetAccessibleName(WebDriverEvent event, String value, WebElement element) { logEntries.add(event);	}
 
 	@Override
 	public void beforeGetCssValue(WebDriverEvent event, String propertyName, WebElement element) {
@@ -527,9 +557,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterGetCssValue(WebDriverEvent event, String propertyName, String value, WebElement element) {
-		logEntries.add(event);
-	}
+	public void afterGetCssValue(WebDriverEvent event, String propertyName, String value, WebElement element) { logEntries.add(event); }
 
 	@Override
 	public void beforeGetTagName(WebDriverEvent event, WebElement element) {
@@ -537,9 +565,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterGetTagName(WebDriverEvent event, String tagName, WebElement element) {
-		logEntries.add(event);
-	}
+	public void afterGetTagName(WebDriverEvent event, String tagName, WebElement element) { logEntries.add(event); }
 
 	@Override
 	public void beforeGetText(WebDriverEvent event, WebElement element) {
