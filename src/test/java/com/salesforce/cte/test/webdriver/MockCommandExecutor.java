@@ -8,12 +8,11 @@
 package com.salesforce.cte.test.webdriver;
 
 import java.io.IOException;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.CommandExecutor;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -65,11 +64,19 @@ public class MockCommandExecutor implements CommandExecutor {
     	response.setState(STATE_OK);
    	
 	    if (FIND_ELEMENT.equals(command.getName())) {
-	    	id = ELEMENT_ID_PREFIX + System.currentTimeMillis();
-	    	RemoteWebElement rwe = new RemoteWebElement();
-	    	rwe.setId(id);
-	    	rwe.setParent(webDriver);
-	    	response.setValue(rwe);
+			id = ELEMENT_ID_PREFIX + System.currentTimeMillis();
+			RemoteWebElement rwe = new RemoteWebElement();
+			rwe.setId(id);
+			rwe.setParent(webDriver);
+			response.setValue(rwe);
+		} else if (FIND_ELEMENTS.equals(command.getName())) {
+			id = ELEMENT_ID_PREFIX + System.currentTimeMillis();
+			RemoteWebElement rwe = new RemoteWebElement();
+			rwe.setId(id);
+			rwe.setParent(webDriver);
+			List<WebElement> elems = new ArrayList<WebElement>();
+			elems.add(rwe);
+			response.setValue(elems);
 	    } else if (CLICK_ELEMENT.equals(command.getName())) {
 	    	// zero argument command
 			response.setValue(STATE_OK);
@@ -173,28 +180,43 @@ public class MockCommandExecutor implements CommandExecutor {
 		} else if (GET_ELEMENT_VALUE_OF_CSS_PROPERTY.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (DISMISS_ALERT.equals(command.getName())){
-			response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 		} else if (ACCEPT_ALERT.equals(command.getName())){
-			response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 		} else if (SEND_KEYS_TO_ELEMENT.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (GO_BACK.equals(command.getName())){
-			response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 		} else if (GO_FORWARD.equals(command.getName())){
-			response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 		} else if (GET.equals(command.getName())){
-			response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 		} else if (SET_CURRENT_WINDOW_SIZE.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (SET_CURRENT_WINDOW_POSITION.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (REFRESH.equals(command.getName())){
-			response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
+		} else if (GET_ACTIVE_ELEMENT.equals(command.getName())){
+			id = ELEMENT_ID_PREFIX + System.currentTimeMillis();
+			RemoteWebElement rwe = new RemoteWebElement();
+			rwe.setId(id);
+			rwe.setParent(webDriver);
+			response.setValue(rwe);
+		} else if (SWITCH_TO_FRAME.equals(command.getName())){
+			response.setValue(STATE_OK);
+		} else if (SWITCH_TO_NEW_WINDOW.equals(command.getName())){
+			Map<String, Object> handles = new HashMap<>();
+			handles.put("handle", STRING_ALLISWELL_VALUE);
+			response.setValue(handles);
 		} else if (GET_CURRENT_URL.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (GET_PAGE_SOURCE.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (CLOSE.equals(command.getName())){
+			// zero argument command
+			response.setValue(STATE_OK);
+		} else if (QUIT.equals(command.getName())){
 			// zero argument command
 			response.setValue(STATE_OK);
 		} else if (GET_CURRENT_WINDOW_HANDLE.equals(command.getName())){

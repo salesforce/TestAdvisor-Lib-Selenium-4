@@ -81,6 +81,7 @@ public class WebDriverEvent {
 		activeElement(WebDriverInterface.TargetLocator, "activeElement"),
 		defaultContent(WebDriverInterface.TargetLocator, "defaultContent"),
 		frameByIndex(WebDriverInterface.TargetLocator, "frame"),
+		frameByName(WebDriverInterface.TargetLocator, "frame"),
 		frameByElement(WebDriverInterface.TargetLocator, "frame"),
 		parentFrame(WebDriverInterface.TargetLocator, "parentFrame"),
 		window(WebDriverInterface.TargetLocator, "window"),
@@ -134,7 +135,7 @@ public class WebDriverEvent {
 		mouseMoveWithOffset(WebDriverInterface.Mouse, "mouseMove"),
 		contextClick(WebDriverInterface.Mouse, "contextClick");
 
-		private Cmd(WebDriverInterface wdIf, String shortCmdString) {
+		Cmd(WebDriverInterface wdIf, String shortCmdString) {
 			this.wdIf = wdIf;
 			this.shortCmdString = shortCmdString;
 		}
@@ -144,10 +145,6 @@ public class WebDriverEvent {
 
 		public String getShortCmdString() {
 			return this.shortCmdString;
-		}
-
-		public WebDriverInterface getWebDriverInterface() {
-			return this.wdIf;
 		}
 
 		public String getLongCmdString() {
@@ -265,9 +262,7 @@ public class WebDriverEvent {
 		return recordNumber;
 	}
 
-	public int getEventNumber() {
-		return eventNumber;
-	}
+	public int getEventNumber() { return eventNumber; }
 
 	public long getTimeStamp() {
 		return timeStamp;

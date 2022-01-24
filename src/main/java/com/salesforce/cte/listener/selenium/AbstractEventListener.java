@@ -267,6 +267,14 @@ public abstract class AbstractEventListener implements IEventListener {
 	}
 
 	@Override
+	public void beforeFrameByName(WebDriverEvent event, String frameName) {
+	}
+
+	@Override
+	public void afterFrameByName(WebDriverEvent event, String frameName) {
+	}
+
+	@Override
 	public void beforeFrameByElement(WebDriverEvent event, WebElement frameElement) {
 	}
 

@@ -279,15 +279,15 @@ public class EventDispatcher {
 			if (o instanceof String)
 				b.append((String)o).append(",");
 			else if (o instanceof Boolean)
-				b.append((Boolean)o).append(",");
+				b.append(o).append(",");
 			else if (o instanceof Number)
-				b.append((Number)o).append(",");
+				b.append(o).append(",");
 			else {
 				while (o instanceof WrapsElement) {
 					o = ((WrapsElement) o).getWrappedElement();
 				}
 				if (o instanceof RemoteWebElement)
-					b.append((RemoteWebElement) o).append(",");
+					b.append(o).append(",");
 				else
 					// for now we are not drilling deeper
 					b.append(o);
@@ -736,6 +736,21 @@ public class EventDispatcher {
 		event.setParam1("" + frameIndex);
 		for (IEventListener listener : eventListeners)
 			listener.afterFrameByIndex(event, frameIndex);
+	}
+
+	public void beforeFrameByName(String frameName) {
+		WebDriverEvent event = new WebDriverEvent(Type.BeforeAction, eventNumber, Cmd.frameByElement);
+		event.setParam1(frameName);
+		currentEvent = event;
+		for (IEventListener listener : eventListeners)
+			listener.beforeFrameByName(event, frameName);
+	}
+
+	public void afterFrameByName(String frameName) {
+		WebDriverEvent event = new WebDriverEvent(Type.AfterAction, eventNumber++, Cmd.frameByElement);
+		event.setParam1(frameName);
+		for (IEventListener listener : eventListeners)
+			listener.afterFrameByName(event, frameName);
 	}
 
 	public void beforeFrameByElement(WebElement frameElement) {
@@ -1427,7 +1442,7 @@ public class EventDispatcher {
 		sb.append(charSequence);
 		return sb.toString();
 	}
-	
+
 	private String getCoordinatesAsString(Coordinates where) {
 		if (where == null || where.inViewPort() == null)
 			return "x:<unknown>,y:<unknown> in view port";

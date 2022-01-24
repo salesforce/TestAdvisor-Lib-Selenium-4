@@ -9,12 +9,12 @@ package com.salesforce.cte.test.webdriver;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.openqa.selenium.*;
@@ -42,12 +42,12 @@ public class TestEventDispatching {
 	private static MockRemoteWebDriver wd;
 	private static FullLogger fullLogger;
 	private static ScreenshotLogger screenshotLogger;
+	
+	private static int numOfEventsBefore;
+	private static int numOfScreenshotEventsBefore;
 
-	/**
-	 * @throws java.lang.Exception
-	 */
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
+	public static void setUpBeforeClass() {
 		MutableCapabilities mcap = new MutableCapabilities();
 		mcap.setCapability(CapabilityType.SUPPORTS_JAVASCRIPT, "true");
 		MockCommandExecutor mce = new MockCommandExecutor();
@@ -67,23 +67,19 @@ public class TestEventDispatching {
 
 //	@Test(priority = 1)
 	public void testOnExceptionWithNoCurrentEventSet() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		EventDispatcher.getInstance().onException(null, null);
-		assertNumOfLogEntries("click", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 0);
-		assertNumOfLogEntries("click", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("click", 0, 0);
 	}
 
-	// Test ScreeshotLogger
+	// Test ScreenshotLogger
 	@Test(priority = 2)
 	public void testClick() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		we.click();
-		assertNumOfLogEntries("click", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("click", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("click", 4, 1);
 
 		TestAdvisorAdministrator administrator = TestAdvisorAdministrator.getInstance();
 		assertEquals(administrator.getTestCaseExecution().eventList.size(), 1);
@@ -91,152 +87,127 @@ public class TestEventDispatching {
 		assertEquals(administrator.getTestCaseExecution().eventList.get(0).getSeleniumCmd(), "webElement.click");
 		assertEquals(administrator.getTestCaseExecution().eventList.get(0).getSeleniumLocator(), "By.id(\"someId\")");
 		assertEquals(administrator.getTestCaseExecution().eventList.get(0).getEventSource(), "com.salesforce.cte.listener.selenium.AbstractEventListener");
-		assertTrue(administrator.getTestCaseExecution().eventList.get(0).getScreenshotPath().contains("screenshot"));
-		assertTrue(administrator.getTestCaseExecution().eventList.get(0).getScreenshotRecordNumber()>=0);	
+		Assert.assertTrue(administrator.getTestCaseExecution().eventList.get(0).getScreenshotPath().contains("screenshot"));
+		Assert.assertTrue(administrator.getTestCaseExecution().eventList.get(0).getScreenshotRecordNumber()>=0);
 	}
-	
+
 	@Test(priority = 2)
 	public void testClickByChildElement() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		WebElement childWe = we.findElement(By.id("someOtherId"));
 		assertNotNull(childWe);
 		childWe.click();
-		assertNumOfLogEntries("clickByChildElement", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 6);
+		assertEventCounters("clickByChildElement", 6, 1);
 	}
 
 	@Test(priority = 2)
 	public void testGet() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.get("https://www.salesforce.com");
-		assertNumOfLogEntries("get", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("sendkeys", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("get", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testExecuteScriptWithScreenshot() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.executeScript("click");
-		assertNumOfLogEntries("click", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("click", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("executeScript", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testExecuteScriptWithoutScreenshot() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		String response = (String) wd.executeScript("style.border='3px solid'");
 		assertEquals(response, "highlighted web element");
-		assertNumOfLogEntries("script", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertEquals(numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size());
+		assertEventCounters("executeScript", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testSubmit() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		we.submit();
-		assertNumOfLogEntries("submit", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("submit", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("submit", 4, 1);
 	}
 
 	@Test(priority = 2)
 	public void testSendKeysByElement() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		we.sendKeys("abc");
-		assertNumOfLogEntries("sendkeys", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("sendkeys", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("sendKeys", 4, 1);
 	}
 
 	@Test(priority = 2)
 	public void testClear() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		we.clear();
-		assertNumOfLogEntries("clear", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("clear", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("clear", 4, 1);
 	}
 
 	@Test(priority = 2)
 	public void testGetTagName() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertEquals(we.getTagName(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertNumOfLogEntries("getTagName", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getTagName", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getTagName", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetDomProperty() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertEquals(we.getDomProperty("someDomProperty"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertNumOfLogEntries("getDomProperty", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getDomProperty", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getDomProperty", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetDomAttribute() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertEquals(we.getDomAttribute("someDomAttribute"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertNumOfLogEntries("getDomAttribute", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getDomAttribute", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getDomAttribute", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetAriaRole() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertEquals(we.getAriaRole(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertNumOfLogEntries("getAriaRole", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getAriaRole", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getAriaRole", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetAccessibleName() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertEquals(we.getAccessibleName(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertNumOfLogEntries("getAccessibleName", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getAccessibleName", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getAccessibleName", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsSelected() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we.isSelected());
-		assertNumOfLogEntries("isSelected", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("isSelected", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("isSelected", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsSelectedWithIncorrectReturnType() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		MockCommandExecutor.setReturnValue("This is not the right return type");
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
@@ -246,26 +217,22 @@ public class TestEventDispatching {
 		} catch (WebDriverException wde) {
 			wasExceptionThrown = true;
 		}
-		assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
-		assertNumOfLogEntries("isSelected", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 3);
-		assertNumOfLogEntries("isSelected", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		Assert.assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
+		assertEventCounters("isSelected", 3, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsEnabled() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we.isEnabled());
-		assertNumOfLogEntries("isEnabled", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("isEnabled", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("isEnabled", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsEnabledWithIncorrectReturnType() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		MockCommandExecutor.setReturnValue("This is not the right return type");
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
@@ -275,26 +242,22 @@ public class TestEventDispatching {
 		} catch (WebDriverException wde) {
 			wasExceptionThrown = true;
 		}
-		assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
-		assertNumOfLogEntries("isEnabled", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 3);
-		assertNumOfLogEntries("isEnabled", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		Assert.assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
+		assertEventCounters("isEnabled", 3, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsDisplayed() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we.isDisplayed());
-		assertNumOfLogEntries("isDisplayed", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("isDisplayed", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("isDisplayed", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsDisplayedWithIncorrectReturnType() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		MockCommandExecutor.setReturnValue("This is not the right return type");
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
@@ -304,52 +267,44 @@ public class TestEventDispatching {
 		} catch (WebDriverException wde) {
 			wasExceptionThrown = true;
 		}
-		assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
-		assertNumOfLogEntries("isDisplayed", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 3);
-		assertNumOfLogEntries("isDisplayed", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		Assert.assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
+		assertEventCounters("isDisplayed", 3, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCssValue() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertEquals(we.getCssValue("someCssValue"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertNumOfLogEntries("getCssValue", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getCssValue", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getCssValue", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetLocation() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Point point = we.getLocation();
 		Assert.assertEquals(point.getX(), 0);
 		Assert.assertEquals(point.getY(), 0);
-		assertNumOfLogEntries("getLocation", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getLocation", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getLocation", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetSize() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Dimension size = we.getSize();
 		Assert.assertEquals(size.getWidth(), 0);
 		Assert.assertEquals(size.getHeight(), 0);
-		assertNumOfLogEntries("getSize", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getSize", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getSize", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetRect() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Rectangle rect = we.getRect();
@@ -357,52 +312,43 @@ public class TestEventDispatching {
 		Assert.assertEquals(rect.getY(), 0);
 		Assert.assertEquals(rect.getWidth(), 0);
 		Assert.assertEquals(rect.getHeight(), 0);
-		assertNumOfLogEntries("getRect", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getRect", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getRect", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCoordinatesInViewPort() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we instanceof RemoteWebElement);
-		RemoteWebElement rwe = (RemoteWebElement) we;
 		Coordinates coordinates = ((RemoteWebElement) we).getCoordinates();
 		assertNotNull(coordinates);
 		Point point = coordinates.inViewPort();
 		Assert.assertEquals(point.getX(), 0);
 		Assert.assertEquals(point.getY(), 0);
-		assertNumOfLogEntries("getCoordinates", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getCoordinates", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getCoordinatesInViewPort", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCoordinatesOnPage() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we instanceof RemoteWebElement);
-		RemoteWebElement rwe = (RemoteWebElement) we;
 		Coordinates coordinates = ((RemoteWebElement) we).getCoordinates();
 		assertNotNull(coordinates);
 		Point point = coordinates.onPage();
 		Assert.assertEquals(point.getX(), 0);
 		Assert.assertEquals(point.getY(), 0);
-		assertNumOfLogEntries("getCoordinates", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getCoordinates", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getCoordinatesOnPage", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCoordinatesOnScreen() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we instanceof RemoteWebElement);
-		RemoteWebElement rwe = (RemoteWebElement) we;
 		Coordinates coordinates = ((RemoteWebElement) we).getCoordinates();
 		assertNotNull(coordinates);
 		boolean wasExceptionThrown = false;
@@ -411,307 +357,342 @@ public class TestEventDispatching {
 		} catch (UnsupportedOperationException uoe) {
 			wasExceptionThrown = true;
 		}
-		assertTrue(wasExceptionThrown, "UnsupportedOperationException not thrown as expected");
-		assertNumOfLogEntries("getCoordinates", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getCoordinates", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		Assert.assertTrue(wasExceptionThrown, "UnsupportedOperationException not thrown as expected");
+		assertEventCounters("getCoordinatesOnScreen", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCoordinatesGetAuxiliary() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we instanceof RemoteWebElement);
-		RemoteWebElement rwe = (RemoteWebElement) we;
 		Coordinates coordinates = ((RemoteWebElement) we).getCoordinates();
 		assertNotNull(coordinates);
 		String id = (String) coordinates.getAuxiliary();
-		assertTrue(id.startsWith(MockCommandExecutor.ELEMENT_ID_PREFIX));
-		assertNumOfLogEntries("getCoordinates", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getCoordinates", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		Assert.assertTrue(id.startsWith(MockCommandExecutor.ELEMENT_ID_PREFIX));
+		assertEventCounters("getCoordinatesGetAuxiliary", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetShadowRoot() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		SearchContext sc = we.getShadowRoot();
 		Assert.assertNotNull(sc);
-		Assert.assertTrue(sc == wd);
-		assertNumOfLogEntries("getShadowRoot", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("getShadowRoot", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		Assert.assertSame(sc, wd);
+		assertEventCounters("getShadowRoot", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testSendKeysByElementSendingCharsOneByOne() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someOtherId"));
 		assertNotNull(we);
 		we.sendKeys("a");
 		we.sendKeys("b");
 		we.sendKeys("c");
-		assertNumOfLogEntries("sendkeys", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 8);
-		assertNumOfLogEntries("sendkeys", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("sendKeys", 8, 1);
 	}
 
 	@Test(priority = 2)
 	public void testClose() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.close();
-		assertNumOfLogEntries("close", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("close", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("close", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testTo() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.navigate().to("http://somewhere");
-		assertNumOfLogEntries("NavigateTo", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("NavigateTo", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("to", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testToURL() throws MalformedURLException {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.navigate().to(new URL("http://somewhere"));
-		assertNumOfLogEntries("NavigateToURL", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("NavigateToURL", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("toURL", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testBack() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
-		wd.navigate().back();;
-		assertNumOfLogEntries("NavigateBack", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("NavigateBack", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		setEventCounters();
+		wd.navigate().back();
+		assertEventCounters("back", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testForward() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
-		wd.navigate().forward();;
-		assertNumOfLogEntries("NavigateForward", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("NavigateForward", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		setEventCounters();
+		wd.navigate().forward();
+		assertEventCounters("forward", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testDismiss() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.switchTo().alert().dismiss();
-		assertNumOfLogEntries("Dismiss", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("Dismiss", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("dismiss", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testAccept() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.switchTo().alert().accept();
-		assertNumOfLogEntries("Accept", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("Accept", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("accept", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testSendKeysToAlert() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.switchTo().alert().sendKeys("some");
-		assertNumOfLogEntries("SendKeys", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("SendKeys", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("sendKeysToAlert", 2, 1);
 	}
 
 	// Test FullLogger
 	@Test(priority = 2)
 	public void testFindElementByWebDriver() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
-		assertNumOfLogEntries("findElementByWebDriver", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("findElementByWebDriver", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("findElementByWebDriver", 2, 0);
 	}
 	
 	@Test(priority = 2)
 	public void testFindElementByElement() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		WebElement childWe = we.findElement(By.id("someOtherId"));
 		assertNotNull(childWe);
-		assertNumOfLogEntries("findElementByElement", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 4);
-		assertNumOfLogEntries("findElementByElement", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("findElementByElement", 4, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetTitle() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		assertEquals(MockCommandExecutor.STATE_OK, wd.getTitle());
-		assertNumOfLogEntries("getTitle", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("getTitle", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getTitle", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testExecuteAsyncScript() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.executeAsyncScript("some script");
-		assertNumOfLogEntries("executeAsyncScript", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("executeAsyncScript", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("executeAsyncScript", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testSetSize() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().window().setSize(new Dimension(1024, 768));
-		assertNumOfLogEntries("setSize", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("setSize", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("setSize", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testSetPosition() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().window().setPosition(new Point(0, 0));
-		assertNumOfLogEntries("setPosition", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("setPosition", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("setPosition", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testRefresh() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.navigate().refresh();
-		assertNumOfLogEntries("refresh", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("refresh", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("refresh", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testActiveElement() {
+		setEventCounters();
+		WebElement elem = wd.switchTo().activeElement();
+		assertNotNull(elem);
+		assertEventCounters("activeElement", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testDefaultContent() {
+		setEventCounters();
+		WebDriver returnedWd = wd.switchTo().defaultContent();
+		assertNotNull(returnedWd);
+		assertEventCounters("defaultContent", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testFrameByIndex() {
+		setEventCounters();
+		WebDriver returnedWd = wd.switchTo().frame(0);
+		assertNotNull(returnedWd);
+		assertEventCounters("frameByIndex", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testFrameByName() {
+		setEventCounters();
+		WebDriver returnedWd = wd.switchTo().frame(MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertNotNull(returnedWd);
+		assertEventCounters("frameByName", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testFrameByElement() {
+		setEventCounters();
+		WebDriver returnedWd = wd.switchTo().frame(wd.findElement(By.id("someId")));
+		assertNotNull(returnedWd);
+		assertEventCounters("frameByElement", 4, 0);
+	}
+
+	@Test(priority = 2)
+	public void testParentFrame() {
+		setEventCounters();
+		WebDriver returnedWd = wd.switchTo().parentFrame();
+		assertNotNull(returnedWd);
+		assertEventCounters("parentFrame", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testWindow() {
+		setEventCounters();
+		WebDriver returnedWd = wd.switchTo().window(MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertNotNull(returnedWd);
+		assertEventCounters("window", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testNewWindow() {
+		setEventCounters();
+		WebDriver returnedWd = wd.switchTo().newWindow(WindowType.WINDOW);
+		assertNotNull(returnedWd);
+		assertEventCounters("newWindow", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetURL() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.getCurrentUrl();
-		assertNumOfLogEntries("GetURL", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("getURL", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testScreenshot() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.getScreenshotAs(OutputType.FILE);
-		assertNumOfLogEntries("Screenshot", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("screenshot", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetPageSource() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		wd.getPageSource();
-		assertNumOfLogEntries("GetPageSource", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		setEventCounters();
+		String source = wd.getPageSource();
+		assertNotNull(source);
+		Assert.assertEquals(source, MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertEventCounters("getPageSource", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testWindowHandle() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		wd.getWindowHandle();
-		assertNumOfLogEntries("GetWindowHandle", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		setEventCounters();
+		String handle = wd.getWindowHandle();
+		assertNotNull(handle);
+		Assert.assertEquals(handle, MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertEventCounters("getWindowHandle", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testDeleteAllCookies() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().deleteAllCookies();
-		assertNumOfLogEntries("deleteAllCookies", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("deleteAllCookies", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testDeleteCookieNamed() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		wd.manage().deleteCookieNamed("name");;
-		assertNumOfLogEntries("deleteCookieNamed", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-	} 
+		setEventCounters();
+		wd.manage().deleteCookieNamed("name");
+		assertEventCounters("deleteCookieNamed", 2, 0);
+	}
 
 	@Test(priority = 2)
 	public void testAddCookie() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().addCookie(new Cookie("name", "value"));
-		assertNumOfLogEntries("addCookie", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("addCookie", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCookies() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		wd.manage().getCookies();
-		assertNumOfLogEntries("getCookies", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		setEventCounters();
+		Set<Cookie> cookies = wd.manage().getCookies();
+		assertNotNull(cookies);
+		assertEventCounters("getCookies", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCookie() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().getCookieNamed("name");
-		assertNumOfLogEntries("GetCookie", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("getCookie", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testDeleteCookies() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().deleteCookieNamed("name");
-		assertNumOfLogEntries("DeleteCookie", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("deleteCookie", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testSetTimeout() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().timeouts().scriptTimeout(Duration.ofSeconds(5));
-		assertNumOfLogEntries("setScriptTimeout", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("setScriptTimeout", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetScriptTimeout() {
+		setEventCounters();
+		Duration timeout = wd.manage().timeouts().getScriptTimeout();
+		assertEventCounters("setScriptTimeout", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testImplicitlyWait() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
-		assertNumOfLogEntries("implicitlyWait", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("implicitlyWait", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testPageLoadTimeout() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(5));
-		assertNumOfLogEntries("pageLoadTimeout", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("pageLoadTimeout", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testTakeScreenshots() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.getScreenshotAs(OutputType.FILE);
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		we.getScreenshotAs(OutputType.FILE);
-		assertNumOfLogEntries("takeScreenshots", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 6);
-		assertNumOfLogEntries("refresh", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("takeScreenshots", 6, 0);
 	}
 
 	@Test(priority = 2)
 	public void testQuit() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.quit();
-		assertNumOfLogEntries("quit", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("quit", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testWebDriverExceptionHandling() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		boolean wasExceptionThrown = false;
 		MockCommandExecutor.setDoTriggerWebDriverException();
 		// this command will not get executed due to a forced exception
@@ -720,9 +701,8 @@ public class TestEventDispatching {
 		} catch (WebDriverException we) {
 			wasExceptionThrown = true;
 		}
-		assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
-		assertNumOfLogEntries("get", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("get", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		Assert.assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
+		assertEventCounters("get", 2, 1);
 	}
 
 	/*
@@ -730,28 +710,25 @@ public class TestEventDispatching {
 	 */
 	@Test(priority = 2)
 	public void testGetAlertText() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		Alert alert = wd.switchTo().alert();
 		assertNotNull(alert);
 		assertEquals(alert.getText(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertNumOfLogEntries("Alert.getText", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("Alert.getText", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 0);
+		assertEventCounters("getTextByAlert", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testDismissAlert() {
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
-		int numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		Alert alert = wd.switchTo().alert();
 		assertNotNull(alert);
 		alert.dismiss();
-		assertNumOfLogEntries("Alert.dismiss", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
-		assertNumOfLogEntries("Alert.dismiss", numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), 1);
+		assertEventCounters("dismissByAlert", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testSecondWebDriver(){
+		setEventCounters();
 		wd.quit();
 		MutableCapabilities mcap = new MutableCapabilities();
 		mcap.setCapability(CapabilityType.SUPPORTS_JAVASCRIPT, "true");
@@ -759,14 +736,24 @@ public class TestEventDispatching {
 		wd = new MockRemoteWebDriver(mce, mcap);
 		mce.setRemoteWebDriver(wd);
 
-		int numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		setEventCounters();
 		wd.manage().timeouts().scriptTimeout(Duration.ofSeconds(5));
-		assertNumOfLogEntries("setScriptTimeout", numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), 2);
+		assertEventCounters("setScriptTimeout", 2, 0);
 	}
 
-	private void assertNumOfLogEntries(String command, int before, int after, int expectedDifference) {
-		System.out.println(String.format("Number of events logged before %s(): %d, and after: %d", command, before, after));
-		assertTrue(after >= before);
+	private void setEventCounters() {
+		numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
+		numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
+	}
+
+	private void assertEventCounters(String method, int eventDelta, int screenshotDelta) {
+		assertNumOfLogEntries(method, numOfEventsBefore, fullLogger.getListOfEventsRecorded().size(), eventDelta, "FullLogger");
+		assertNumOfLogEntries(method, numOfScreenshotEventsBefore, screenshotLogger.getListOfEventsRecorded().size(), screenshotDelta, "ScreenshotLogger");
+	}
+
+	private void assertNumOfLogEntries(String command, int before, int after, int expectedDifference, String eventType) {
+		System.out.println(String.format("Number of events logged by %s before %s: %d, and after: %d", eventType, command, before, after));
+		Assert.assertTrue(after >= before);
 		assertEquals(after - before , expectedDifference);
 	}
 }

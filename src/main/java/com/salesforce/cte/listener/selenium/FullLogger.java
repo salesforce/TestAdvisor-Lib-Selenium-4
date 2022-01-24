@@ -232,14 +232,10 @@ public class FullLogger extends AbstractEventListener {
 	 *--------------------------------------------------------------------*/
 
 	@Override
-	public <X> void beforeGetScreenshotAs(WebDriverEvent event, OutputType<X> target) {
-		logEntries.add(event);
-	}
+	public <X> void beforeGetScreenshotAs(WebDriverEvent event, OutputType<X> target) { logEntries.add(event); }
 
 	@Override
-	public <X> void afterGetScreenshotAs(WebDriverEvent event, OutputType<X> target, X screenshot) {
-		logEntries.add(event);
-	}
+	public <X> void afterGetScreenshotAs(WebDriverEvent event, OutputType<X> target, X screenshot) { logEntries.add(event); }
 
 	/*---------------------------------------------------------------------------
 	 * Section for all commands called directly from WebDriver.Navigation object.
@@ -306,6 +302,16 @@ public class FullLogger extends AbstractEventListener {
 
 	@Override
 	public void afterFrameByIndex(WebDriverEvent event, int frameIndex) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void beforeFrameByName(WebDriverEvent event, String frameName) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterFrameByName(WebDriverEvent event, String frameName) {
 		logEntries.add(event);
 	}
 
