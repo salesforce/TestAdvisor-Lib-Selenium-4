@@ -89,9 +89,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterFindElements(WebDriverEvent event, List<WebElement> returnedElements, By by) {
-		logEntries.add(event);
-	}
+	public void afterFindElements(WebDriverEvent event, List<WebElement> returnedElements, By by) { logEntries.add(event); }
 
 	@Override
 	public void beforeGet(WebDriverEvent event, String url) {
@@ -232,14 +230,10 @@ public class FullLogger extends AbstractEventListener {
 	 *--------------------------------------------------------------------*/
 
 	@Override
-	public <X> void beforeGetScreenshotAs(WebDriverEvent event, OutputType<X> target) {
-		logEntries.add(event);
-	}
+	public <X> void beforeGetScreenshotAs(WebDriverEvent event, OutputType<X> target) { logEntries.add(event); }
 
 	@Override
-	public <X> void afterGetScreenshotAs(WebDriverEvent event, OutputType<X> target, X screenshot) {
-		logEntries.add(event);
-	}
+	public <X> void afterGetScreenshotAs(WebDriverEvent event, OutputType<X> target, X screenshot) { logEntries.add(event); }
 
 	/*---------------------------------------------------------------------------
 	 * Section for all commands called directly from WebDriver.Navigation object.
@@ -306,6 +300,16 @@ public class FullLogger extends AbstractEventListener {
 
 	@Override
 	public void afterFrameByIndex(WebDriverEvent event, int frameIndex) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void beforeFrameByName(WebDriverEvent event, String frameName) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterFrameByName(WebDriverEvent event, String frameName) {
 		logEntries.add(event);
 	}
 
@@ -512,14 +516,44 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
+	public void beforeGetDomProperty(WebDriverEvent event, String name, WebElement element) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterGetDomProperty(WebDriverEvent event, String value, String name, WebElement element) { logEntries.add(event); }
+
+	@Override
+	public void beforeGetDomAttribute(WebDriverEvent event, String name, WebElement element) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterGetDomAttribute(WebDriverEvent event, String value, String name, WebElement element) { logEntries.add(event); }
+
+	@Override
 	public void beforeGetAttribute(WebDriverEvent event, String name, WebElement element) {
 		logEntries.add(event);
 	}
 
 	@Override
-	public void afterGetAttribute(WebDriverEvent event, String value, String name, WebElement element) {
+	public void afterGetAttribute(WebDriverEvent event, String value, String name, WebElement element) { logEntries.add(event);	}
+
+	@Override
+	public void beforeGetAriaRole(WebDriverEvent event, WebElement element) {
 		logEntries.add(event);
 	}
+
+	@Override
+	public void afterGetAriaRole(WebDriverEvent event, String value, WebElement element) { logEntries.add(event);	}
+
+	@Override
+	public void beforeGetAccessibleName(WebDriverEvent event, WebElement element) {
+		logEntries.add(event);
+	}
+
+	@Override
+	public void afterGetAccessibleName(WebDriverEvent event, String value, WebElement element) { logEntries.add(event);	}
 
 	@Override
 	public void beforeGetCssValue(WebDriverEvent event, String propertyName, WebElement element) {
@@ -527,9 +561,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterGetCssValue(WebDriverEvent event, String propertyName, String value, WebElement element) {
-		logEntries.add(event);
-	}
+	public void afterGetCssValue(WebDriverEvent event, String propertyName, String value, WebElement element) { logEntries.add(event); }
 
 	@Override
 	public void beforeGetTagName(WebDriverEvent event, WebElement element) {
@@ -537,9 +569,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterGetTagName(WebDriverEvent event, String tagName, WebElement element) {
-		logEntries.add(event);
-	}
+	public void afterGetTagName(WebDriverEvent event, String tagName, WebElement element) { logEntries.add(event); }
 
 	@Override
 	public void beforeGetText(WebDriverEvent event, WebElement element) {
@@ -597,9 +627,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterGetSizeByElement(WebDriverEvent event, Dimension dimension, WebElement element) {
-		logEntries.add(event);
-	}
+	public void afterGetSizeByElement(WebDriverEvent event, Dimension dimension, WebElement element) { logEntries.add(event); }
 
 	@Override
 	public void beforeGetRect(WebDriverEvent event, WebElement element) {
@@ -907,29 +935,19 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterGetCoordinates(WebDriverEvent event, Coordinates coordinates, WebElement element) {
-		logEntries.add(event);
-	}
+	public void afterGetCoordinates(WebDriverEvent event, Coordinates coordinates, WebElement element) { logEntries.add(event); }
 
 	@Override
-	public <X> void beforeGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, WebElement element) {
-		logEntries.add(event);
-	}
+	public <X> void beforeGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, WebElement element) { logEntries.add(event); }
 
 	@Override
-	public <X> void afterGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, X screenshot, WebElement element) {
-		logEntries.add(event);
-	}
+	public <X> void afterGetScreenshotAsByElement(WebDriverEvent event, OutputType<X> target, X screenshot, WebElement element) { logEntries.add(event); }
 
 	@Override
-	public void beforeUploadFile(WebDriverEvent event, WebElement element, File localFile) {
-		logEntries.add(event);
-	}
+	public void beforeUploadFile(WebDriverEvent event, WebElement element, File localFile) { logEntries.add(event); }
 
 	@Override
-	public void afterUploadFile(WebDriverEvent event, WebElement element, File localFile, String response) {
-		logEntries.add(event);
-	}
+	public void afterUploadFile(WebDriverEvent event, WebElement element, File localFile, String response) { logEntries.add(event); }
 
 	@Override
 	public void onException(WebDriverEvent event, Cmd cmd, Throwable issue) {

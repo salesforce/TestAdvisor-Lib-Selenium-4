@@ -9,11 +9,7 @@ package com.salesforce.cte.listener.selenium;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
@@ -279,15 +275,15 @@ public class EventDispatcher {
 			if (o instanceof String)
 				b.append((String)o).append(",");
 			else if (o instanceof Boolean)
-				b.append((Boolean)o).append(",");
+				b.append(o).append(",");
 			else if (o instanceof Number)
-				b.append((Number)o).append(",");
+				b.append(o).append(",");
 			else {
 				while (o instanceof WrapsElement) {
 					o = ((WrapsElement) o).getWrappedElement();
 				}
 				if (o instanceof RemoteWebElement)
-					b.append((RemoteWebElement) o).append(",");
+					b.append(o).append(",");
 				else
 					// for now we are not drilling deeper
 					b.append(o);
@@ -738,6 +734,21 @@ public class EventDispatcher {
 			listener.afterFrameByIndex(event, frameIndex);
 	}
 
+	public void beforeFrameByName(String frameName) {
+		WebDriverEvent event = new WebDriverEvent(Type.BeforeAction, eventNumber, Cmd.frameByElement);
+		event.setParam1(frameName);
+		currentEvent = event;
+		for (IEventListener listener : eventListeners)
+			listener.beforeFrameByName(event, frameName);
+	}
+
+	public void afterFrameByName(String frameName) {
+		WebDriverEvent event = new WebDriverEvent(Type.AfterAction, eventNumber++, Cmd.frameByElement);
+		event.setParam1(frameName);
+		for (IEventListener listener : eventListeners)
+			listener.afterFrameByName(event, frameName);
+	}
+
 	public void beforeFrameByElement(WebElement frameElement) {
 		WebDriverEvent event = new WebDriverEvent(Type.BeforeAction, eventNumber, Cmd.frameByElement);
 		event.setParam1(WebDriverEvent.getLocatorFromWebElement(frameElement));
@@ -993,7 +1004,7 @@ public class EventDispatcher {
 			listener.beforeGetDomAttribute(event, name, element);
 	}
 
-	public void afterGetDomAttribute(String value, String name, WebElement element) {
+	public void afterGetDomAttribute(String name, String value, WebElement element) {
 		WebDriverEvent event = new WebDriverEvent(Type.AfterGather, eventNumber, Cmd.getDomAttribute);
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setParam1(name);
@@ -1011,7 +1022,7 @@ public class EventDispatcher {
 			listener.beforeGetDomProperty(event, name, element);
 	}
 
-	public void afterGetDomProperty(String value, String name, WebElement element) {
+	public void afterGetDomProperty(String name, String value, WebElement element) {
 		WebDriverEvent event = new WebDriverEvent(Type.AfterGather, eventNumber, Cmd.getDomProperty);
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setParam1(name);
@@ -1033,7 +1044,7 @@ public class EventDispatcher {
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setReturnValue(role);
 		for (IEventListener listener : eventListeners)
-			listener.afterGetTagName(event, role, element);		
+			listener.afterGetAriaRole(event, role, element);
 	}
 
 	public void beforeGetAccessibleName(WebElement element) {
@@ -1049,7 +1060,7 @@ public class EventDispatcher {
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setReturnValue(role);
 		for (IEventListener listener : eventListeners)
-			listener.afterGetTagName(event, role, element);		
+			listener.afterGetAccessibleName(event, role, element);
 	}
 
 	public void beforeGetTagName(WebElement element) {
@@ -1423,11 +1434,9 @@ public class EventDispatcher {
 	}
 
 	private String charSequence2String(CharSequence... charSequence) {
-		final StringBuilder sb = new StringBuilder(charSequence.length);
-		sb.append(charSequence);
-		return sb.toString();
+		return Arrays.toString(charSequence);
 	}
-	
+
 	private String getCoordinatesAsString(Coordinates where) {
 		if (where == null || where.inViewPort() == null)
 			return "x:<unknown>,y:<unknown> in view port";

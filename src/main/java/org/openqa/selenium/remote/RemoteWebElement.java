@@ -49,6 +49,8 @@ import static org.openqa.selenium.remote.DriverCommand.FIND_CHILD_ELEMENTS;
 
 public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot, WrapsDriver {
 
+	private static final String RETURNED_VALUE_CANNOT_BE_CONVERTED_TO_BOOLEAN = "Returned value cannot be converted to Boolean: ";
+
 	private String foundBy;
 	protected String id;
 	protected RemoteWebDriver parent;
@@ -151,7 +153,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 		eventDispatcher.beforeGetDomProperty(name, this);
 		String value = stringValueOf(
 				execute(DriverCommand.GET_ELEMENT_DOM_PROPERTY(id, name)).getValue());
-		eventDispatcher.afterGetDomProperty(name, value, this);
+		eventDispatcher.afterGetDomProperty(name, value,this);
 		return value;
 	}
 
@@ -160,7 +162,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 		eventDispatcher.beforeGetDomAttribute(name, this);
 		String value = stringValueOf(
 				execute(DriverCommand.GET_ELEMENT_DOM_ATTRIBUTE(id, name)).getValue());
-		eventDispatcher.afterGetDomAttribute(name, value, this);
+		eventDispatcher.afterGetDomAttribute(name, value,this);
 		return value;
 	}
 
@@ -205,7 +207,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 			eventDispatcher.afterIsSelected(boolValue, this);
 			return boolValue;
 		} catch (ClassCastException ex) {
-			throw new WebDriverException("Returned value cannot be converted to Boolean: " + value, ex);
+			throw new WebDriverException(RETURNED_VALUE_CANNOT_BE_CONVERTED_TO_BOOLEAN + value, ex);
 		}
 	}
 
@@ -218,7 +220,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 			eventDispatcher.afterIsEnabled(boolValue, this);
 			return boolValue;
 		} catch (ClassCastException ex) {
-			throw new WebDriverException("Returned value cannot be converted to Boolean: " + value, ex);
+			throw new WebDriverException(RETURNED_VALUE_CANNOT_BE_CONVERTED_TO_BOOLEAN + value, ex);
 		}
 	}
 
@@ -236,7 +238,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 		eventDispatcher.beforeGetCssValue(propertyName, this);
 		Response response = execute(DriverCommand.GET_ELEMENT_VALUE_OF_CSS_PROPERTY(id, propertyName));
 		String value = (String) response.getValue();
-		eventDispatcher.afterGetText(value, this);
+		eventDispatcher.afterGetCssValue(propertyName, value, this);
 		return value;
 	}
 
@@ -340,21 +342,31 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 
 	@Override
 	public boolean isDisplayed() {
+		eventDispatcher.beforeIsDisplayed(this);
 		Object value = execute(DriverCommand.IS_ELEMENT_DISPLAYED(id)).getValue();
 		try {
 			// See https://github.com/SeleniumHQ/selenium/issues/9266
 			if (value == null) {
 				return false;
 			}
-			return (Boolean) value;
+			boolean boolValue = (Boolean) value;
+			eventDispatcher.afterIsDisplayed(boolValue, this);
+			return boolValue;
 		} catch (ClassCastException ex) {
-			throw new WebDriverException("Returned value cannot be converted to Boolean: " + value, ex);
+			throw new WebDriverException(RETURNED_VALUE_CANNOT_BE_CONVERTED_TO_BOOLEAN + value, ex);
 		}
 	}
 
 	@Override
 	@SuppressWarnings({ "unchecked" })
 	public Point getLocation() {
+		eventDispatcher.beforeGetLocation(this);
+		Point point = innerGetLocation();
+		eventDispatcher.afterGetLocation(point, this);
+		return point;
+	}
+
+	private Point innerGetLocation() {
 		Response response = execute(DriverCommand.GET_ELEMENT_LOCATION(id));
 		Map<String, Object> rawPoint = (Map<String, Object>) response.getValue();
 		int x = ((Number) rawPoint.get("x")).intValue();
@@ -365,28 +377,35 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 	@Override
 	@SuppressWarnings({ "unchecked" })
 	public Dimension getSize() {
+		eventDispatcher.beforeGetSizeByElement(this);
 		Response response = execute(DriverCommand.GET_ELEMENT_SIZE(id));
 		Map<String, Object> rawSize = (Map<String, Object>) response.getValue();
 		int width = ((Number) rawSize.get("width")).intValue();
 		int height = ((Number) rawSize.get("height")).intValue();
-		return new Dimension(width, height);
+		Dimension size = new Dimension(width, height);
+		eventDispatcher.afterGetSizeByElement(size, this);
+		return size;
 	}
 
 	@Override
 	@SuppressWarnings({ "unchecked" })
 	public Rectangle getRect() {
+		eventDispatcher.beforeGetRect(this);
 		Response response = execute(DriverCommand.GET_ELEMENT_RECT(id));
 		Map<String, Object> rawRect = (Map<String, Object>) response.getValue();
 		int x = ((Number) rawRect.get("x")).intValue();
 		int y = ((Number) rawRect.get("y")).intValue();
 		int width = ((Number) rawRect.get("width")).intValue();
 		int height = ((Number) rawRect.get("height")).intValue();
-		return new Rectangle(x, y, height, width);
+		Rectangle rect = new Rectangle(x, y, height, width);
+		eventDispatcher.afterGetRect(rect, this);
+		return rect;
 	}
 
 	@Override
 	public Coordinates getCoordinates() {
-		return new Coordinates() {
+		eventDispatcher.beforeGetCoordinates(this);
+		Coordinates coordinates = new Coordinates() {
 
 			@Override
 			public Point onScreen() {
@@ -404,7 +423,7 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 
 			@Override
 			public Point onPage() {
-				return getLocation();
+				return innerGetLocation();
 			}
 
 			@Override
@@ -412,26 +431,29 @@ public class RemoteWebElement implements WebElement, Locatable, TakesScreenshot,
 				return getId();
 			}
 		};
+		eventDispatcher.afterGetCoordinates(coordinates, this);
+		return coordinates;
 	}
 
 	@Override
 	@Beta
 	public <X> X getScreenshotAs(OutputType<X> outputType) throws WebDriverException {
-		eventDispatcher.beforeGetScreenshotAs(outputType);
+		eventDispatcher.beforeGetScreenshotAsByElement(outputType, this);
+		X screenshot = getScreenshotAsForTestAdvisor(outputType);
+		eventDispatcher.afterGetScreenshotAsByElement(outputType, screenshot, this);
+		return screenshot;
+	}
+
+	public <X> X getScreenshotAsForTestAdvisor(OutputType<X> outputType) throws WebDriverException {
 		Response response = execute(DriverCommand.ELEMENT_SCREENSHOT(id));
 		Object result = response.getValue();
 		if (result instanceof String) {
 			String base64EncodedPng = (String) result;
-			X screenshot = outputType.convertFromBase64Png(base64EncodedPng);
-			eventDispatcher.afterGetScreenshotAs(outputType, screenshot);
-			return screenshot;
+			return outputType.convertFromBase64Png(base64EncodedPng);
 		} else if (result instanceof byte[]) {
 			String base64EncodedPng = new String((byte[]) result);
-			X screenshot = outputType.convertFromBase64Png(base64EncodedPng);
-			eventDispatcher.afterGetScreenshotAs(outputType, screenshot);
-			return screenshot;
+			return outputType.convertFromBase64Png(base64EncodedPng);
 		} else {
-			eventDispatcher.afterGetScreenshotAs(outputType, null);
 			throw new RuntimeException(
 					String.format("Unexpected result for %s command: %s", DriverCommand.ELEMENT_SCREENSHOT,
 							result == null ? "null" : result.getClass().getName() + " instance"));

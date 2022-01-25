@@ -27,6 +27,8 @@ hs_err_pid*
 
 /.classpath
 /.settings/
+/.idea/
+.project
 /.testadvisor/
 /test-output/
 16*.json
