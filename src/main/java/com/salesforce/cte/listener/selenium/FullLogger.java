@@ -89,9 +89,7 @@ public class FullLogger extends AbstractEventListener {
 	}
 
 	@Override
-	public void afterFindElements(WebDriverEvent event, List<WebElement> returnedElements, By by) {
-		logEntries.add(event);
-	}
+	public void afterFindElements(WebDriverEvent event, List<WebElement> returnedElements, By by) { logEntries.add(event); }
 
 	@Override
 	public void beforeGet(WebDriverEvent event, String url) {

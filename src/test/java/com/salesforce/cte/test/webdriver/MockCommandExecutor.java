@@ -4,13 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-
 package com.salesforce.cte.test.webdriver;
 
-import java.io.IOException;
 import java.util.*;
 
-import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.Command;
@@ -41,18 +38,13 @@ public class MockCommandExecutor implements CommandExecutor {
 	private static String stringReturnValue;
 
 	private RemoteWebDriver webDriver;
-	private String id;
 
 	public void setRemoteWebDriver(RemoteWebDriver webDriver) {
 		this.webDriver = webDriver;
 	}
 	
-	public String getId() {
-		return id;
-	}
-
 	@Override
-	public Response execute(Command command) throws IOException {
+	public Response execute(Command command) {
 		if (doTriggerWebDriverException) {
 			// automatically reset flag so that exception
 			// thrown below is a one-time-thing
@@ -62,8 +54,9 @@ public class MockCommandExecutor implements CommandExecutor {
 
 		Response response = new Response();
     	response.setState(STATE_OK);
-   	
-	    if (FIND_ELEMENT.equals(command.getName())) {
+
+		String id;
+		if (FIND_ELEMENT.equals(command.getName())) {
 			id = ELEMENT_ID_PREFIX + System.currentTimeMillis();
 			RemoteWebElement rwe = new RemoteWebElement();
 			rwe.setId(id);
@@ -74,7 +67,7 @@ public class MockCommandExecutor implements CommandExecutor {
 			RemoteWebElement rwe = new RemoteWebElement();
 			rwe.setId(id);
 			rwe.setParent(webDriver);
-			List<WebElement> elems = new ArrayList<WebElement>();
+			List<WebElement> elems = new ArrayList<>();
 			elems.add(rwe);
 			response.setValue(elems);
 	    } else if (CLICK_ELEMENT.equals(command.getName())) {
@@ -118,6 +111,10 @@ public class MockCommandExecutor implements CommandExecutor {
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (GET_ELEMENT_TAG_NAME.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (GET_ELEMENT_TEXT.equals(command.getName())){
+			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (GET_ELEMENT_ATTRIBUTE.equals(command.getName())){
+			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (GET_ELEMENT_DOM_PROPERTY.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (GET_ELEMENT_DOM_ATTRIBUTE.equals(command.getName())){
@@ -133,7 +130,7 @@ public class MockCommandExecutor implements CommandExecutor {
 				// use return value of wrong type
 				response.setValue(stringReturnValue);
 			} else {
-				response.setValue(Boolean.valueOf(true));
+				response.setValue(true);
 			}
 		} else if (IS_ELEMENT_ENABLED.equals(command.getName())){
 			if (doUseSpecificReturnValue) {
@@ -142,7 +139,7 @@ public class MockCommandExecutor implements CommandExecutor {
 				// use return value of wrong type
 				response.setValue(stringReturnValue);
 			} else {
-				response.setValue(Boolean.valueOf(true));
+				response.setValue(true);
 			}
 		} else if (IS_ELEMENT_DISPLAYED.equals(command.getName())){
 			if (doUseSpecificReturnValue) {
@@ -151,7 +148,7 @@ public class MockCommandExecutor implements CommandExecutor {
 				// use return value of wrong type
 				response.setValue(stringReturnValue);
 			} else {
-				response.setValue(Boolean.valueOf(true));
+				response.setValue(true);
 			}
 		} else if (GET_ELEMENT_LOCATION.equals(command.getName())){
 			Map<String, Object> rawPoint = new HashMap<>();
@@ -165,10 +162,10 @@ public class MockCommandExecutor implements CommandExecutor {
 			response.setValue(rawSize);
 		} else if (GET_ELEMENT_RECT.equals(command.getName())){
 			Map<String, Object> rawRect = new HashMap<>();
-			rawRect.put("x", (Number) 0);
-			rawRect.put("y", (Number) 0);
-			rawRect.put("width", (Number) 0);
-			rawRect.put("height", (Number) 0);
+			rawRect.put("x", 0);
+			rawRect.put("y", 0);
+			rawRect.put("width", 0);
+			rawRect.put("height", 0);
 			response.setValue(rawRect);
 		} else if (GET_ELEMENT_LOCATION_ONCE_SCROLLED_INTO_VIEW.equals(command.getName())){
 			Map<String, Object> rawPoint = new HashMap<>();
@@ -191,10 +188,20 @@ public class MockCommandExecutor implements CommandExecutor {
 			response.setValue(STATE_OK);
 		} else if (GET.equals(command.getName())){
 			response.setValue(STATE_OK);
+		} else if (GET_CURRENT_WINDOW_SIZE.equals(command.getName())){
+			Map<String, Object> rawSize = new HashMap<>();
+			rawSize.put("width", 0);
+			rawSize.put("height", 0);
+			response.setValue(rawSize);
+		} else if (GET_CURRENT_WINDOW_POSITION.equals(command.getName())){
+			Map<String, Object> rawPoint = new HashMap<>();
+			rawPoint.put("x", 0);
+			rawPoint.put("y", 0);
+			response.setValue(rawPoint);
 		} else if (SET_CURRENT_WINDOW_SIZE.equals(command.getName())){
-			response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 		} else if (SET_CURRENT_WINDOW_POSITION.equals(command.getName())){
-			response.setValue(STRING_ALLISWELL_VALUE);
+			response.setValue(STATE_OK);
 		} else if (REFRESH.equals(command.getName())){
 			response.setValue(STATE_OK);
 		} else if (GET_ACTIVE_ELEMENT.equals(command.getName())){
@@ -233,12 +240,28 @@ public class MockCommandExecutor implements CommandExecutor {
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (SET_TIMEOUT.equals(command.getName())){
 			response.setValue(STRING_ALLISWELL_VALUE);
+		} else if (GET_TIMEOUTS.equals(command.getName())){
+			Map<String, Object> rawTimeout = new HashMap<>();
+			rawTimeout.put("implicit", 1000L);
+			rawTimeout.put("pageLoad", 2000L);
+			rawTimeout.put("script", 3000L);
+			response.setValue(rawTimeout);
 		} else if (GET_ALERT_TEXT.equals(command.getName())) {
 			response.setValue(STRING_ALLISWELL_VALUE);
 		} else if (DISMISS_ALERT.equals(command.getName())) {
 			response.setValue(STATE_OK);
+		} else if (CLICK.equals(command.getName())) {
+			response.setValue(STATE_OK);
+		} else if (DOUBLE_CLICK.equals(command.getName())) {
+			response.setValue(STATE_OK);
+		} else if (MOUSE_DOWN.equals(command.getName())) {
+			response.setValue(STATE_OK);
+		} else if (MOUSE_UP.equals(command.getName())) {
+			response.setValue(STATE_OK);
+		} else if (MOVE_TO.equals(command.getName())) {
+			response.setValue(STATE_OK);
 		} else {
-	    	System.out.println(String.format("Command %s not yet covered by %s", command.getName(), this.getClass().getName()));
+	    	System.out.printf("Command %s not yet covered by %s%n", command.getName(), this.getClass().getName());
 	    }
 		return response;
 	}

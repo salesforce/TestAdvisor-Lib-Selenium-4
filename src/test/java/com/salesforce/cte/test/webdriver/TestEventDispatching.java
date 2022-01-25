@@ -75,11 +75,11 @@ public class TestEventDispatching {
 	// Test ScreenshotLogger
 	@Test(priority = 2)
 	public void testClick() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		we.click();
-		assertEventCounters("click", 4, 1);
+		assertEventCounters("click", 2, 1);
 
 		TestAdvisorAdministrator administrator = TestAdvisorAdministrator.getInstance();
 		assertEquals(administrator.getTestCaseExecution().eventList.size(), 1);
@@ -93,13 +93,13 @@ public class TestEventDispatching {
 
 	@Test(priority = 2)
 	public void testClickByChildElement() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		WebElement childWe = we.findElement(By.id("someOtherId"));
 		assertNotNull(childWe);
+		setEventCounters();
 		childWe.click();
-		assertEventCounters("clickByChildElement", 6, 1);
+		assertEventCounters("clickByChildElement", 2, 1);
 	}
 
 	@Test(priority = 2)
@@ -126,91 +126,109 @@ public class TestEventDispatching {
 
 	@Test(priority = 2)
 	public void testSubmit() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		we.submit();
-		assertEventCounters("submit", 4, 1);
+		assertEventCounters("submit", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testSendKeysByElement() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		we.sendKeys("abc");
-		assertEventCounters("sendKeys", 4, 1);
+		assertEventCounters("sendKeys", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testClear() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		we.clear();
-		assertEventCounters("clear", 4, 1);
+		assertEventCounters("clear", 2, 1);
 	}
 
 	@Test(priority = 2)
 	public void testGetTagName() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertEquals(we.getTagName(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertEventCounters("getTagName", 4, 0);
+		assertEventCounters("getTagName", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetTextByElement() {
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		setEventCounters();
+		Assert.assertEquals(we.getText(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertEventCounters("getTextByElement", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetAttribute() {
+		WebElement we = wd.findElement(By.id("someId"));
+		assertNotNull(we);
+		setEventCounters();
+		Assert.assertEquals(we.getAttribute("someAttribute"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertEventCounters("getAttribute", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetDomProperty() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertEquals(we.getDomProperty("someDomProperty"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertEventCounters("getDomProperty", 4, 0);
+		assertEventCounters("getDomProperty", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetDomAttribute() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertEquals(we.getDomAttribute("someDomAttribute"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertEventCounters("getDomAttribute", 4, 0);
+		assertEventCounters("getDomAttribute", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetAriaRole() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertEquals(we.getAriaRole(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertEventCounters("getAriaRole", 4, 0);
+		assertEventCounters("getAriaRole", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetAccessibleName() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertEquals(we.getAccessibleName(), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertEventCounters("getAccessibleName", 4, 0);
+		assertEventCounters("getAccessibleName", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsSelected() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertTrue(we.isSelected());
-		assertEventCounters("isSelected", 4, 0);
+		assertEventCounters("isSelected", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsSelectedWithIncorrectReturnType() {
-		setEventCounters();
 		MockCommandExecutor.setReturnValue("This is not the right return type");
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		boolean wasExceptionThrown = false;
 		try {
 			we.isSelected();
@@ -218,24 +236,24 @@ public class TestEventDispatching {
 			wasExceptionThrown = true;
 		}
 		Assert.assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
-		assertEventCounters("isSelected", 3, 0);
+		assertEventCounters("isSelected", 1, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsEnabled() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertTrue(we.isEnabled());
-		assertEventCounters("isEnabled", 4, 0);
+		assertEventCounters("isEnabled", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsEnabledWithIncorrectReturnType() {
-		setEventCounters();
 		MockCommandExecutor.setReturnValue("This is not the right return type");
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		boolean wasExceptionThrown = false;
 		try {
 			we.isEnabled();
@@ -243,24 +261,24 @@ public class TestEventDispatching {
 			wasExceptionThrown = true;
 		}
 		Assert.assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
-		assertEventCounters("isEnabled", 3, 0);
+		assertEventCounters("isEnabled", 1, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsDisplayed() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertTrue(we.isDisplayed());
-		assertEventCounters("isDisplayed", 4, 0);
+		assertEventCounters("isDisplayed", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testIsDisplayedWithIncorrectReturnType() {
-		setEventCounters();
 		MockCommandExecutor.setReturnValue("This is not the right return type");
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		boolean wasExceptionThrown = false;
 		try {
 			we.isDisplayed();
@@ -268,87 +286,87 @@ public class TestEventDispatching {
 			wasExceptionThrown = true;
 		}
 		Assert.assertTrue(wasExceptionThrown, "WebDriverException not thrown as expected");
-		assertEventCounters("isDisplayed", 3, 0);
+		assertEventCounters("isDisplayed", 1, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCssValue() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Assert.assertEquals(we.getCssValue("someCssValue"), MockCommandExecutor.STRING_ALLISWELL_VALUE);
-		assertEventCounters("getCssValue", 4, 0);
+		assertEventCounters("getCssValue", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetLocation() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Point point = we.getLocation();
 		Assert.assertEquals(point.getX(), 0);
 		Assert.assertEquals(point.getY(), 0);
-		assertEventCounters("getLocation", 4, 0);
+		assertEventCounters("getLocation", 2, 0);
 	}
 
 	@Test(priority = 2)
-	public void testGetSize() {
-		setEventCounters();
+	public void testGetSizeByElement() {
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Dimension size = we.getSize();
 		Assert.assertEquals(size.getWidth(), 0);
 		Assert.assertEquals(size.getHeight(), 0);
-		assertEventCounters("getSize", 4, 0);
+		assertEventCounters("getSizeByElement", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetRect() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		Rectangle rect = we.getRect();
 		Assert.assertEquals(rect.getX(), 0);
 		Assert.assertEquals(rect.getY(), 0);
 		Assert.assertEquals(rect.getWidth(), 0);
 		Assert.assertEquals(rect.getHeight(), 0);
-		assertEventCounters("getRect", 4, 0);
+		assertEventCounters("getRect", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCoordinatesInViewPort() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we instanceof RemoteWebElement);
+		setEventCounters();
 		Coordinates coordinates = ((RemoteWebElement) we).getCoordinates();
 		assertNotNull(coordinates);
 		Point point = coordinates.inViewPort();
 		Assert.assertEquals(point.getX(), 0);
 		Assert.assertEquals(point.getY(), 0);
-		assertEventCounters("getCoordinatesInViewPort", 4, 0);
+		assertEventCounters("getCoordinatesInViewPort", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCoordinatesOnPage() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we instanceof RemoteWebElement);
+		setEventCounters();
 		Coordinates coordinates = ((RemoteWebElement) we).getCoordinates();
 		assertNotNull(coordinates);
 		Point point = coordinates.onPage();
 		Assert.assertEquals(point.getX(), 0);
 		Assert.assertEquals(point.getY(), 0);
-		assertEventCounters("getCoordinatesOnPage", 4, 0);
+		assertEventCounters("getCoordinatesOnPage", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCoordinatesOnScreen() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we instanceof RemoteWebElement);
+		setEventCounters();
 		Coordinates coordinates = ((RemoteWebElement) we).getCoordinates();
 		assertNotNull(coordinates);
 		boolean wasExceptionThrown = false;
@@ -358,42 +376,42 @@ public class TestEventDispatching {
 			wasExceptionThrown = true;
 		}
 		Assert.assertTrue(wasExceptionThrown, "UnsupportedOperationException not thrown as expected");
-		assertEventCounters("getCoordinatesOnScreen", 4, 0);
+		assertEventCounters("getCoordinatesOnScreen", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetCoordinatesGetAuxiliary() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
 		Assert.assertTrue(we instanceof RemoteWebElement);
+		setEventCounters();
 		Coordinates coordinates = ((RemoteWebElement) we).getCoordinates();
 		assertNotNull(coordinates);
 		String id = (String) coordinates.getAuxiliary();
 		Assert.assertTrue(id.startsWith(MockCommandExecutor.ELEMENT_ID_PREFIX));
-		assertEventCounters("getCoordinatesGetAuxiliary", 4, 0);
+		assertEventCounters("getCoordinatesGetAuxiliary", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testGetShadowRoot() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		SearchContext sc = we.getShadowRoot();
 		Assert.assertNotNull(sc);
 		Assert.assertSame(sc, wd);
-		assertEventCounters("getShadowRoot", 4, 0);
+		assertEventCounters("getShadowRoot", 2, 0);
 	}
 
 	@Test(priority = 2)
 	public void testSendKeysByElementSendingCharsOneByOne() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someOtherId"));
 		assertNotNull(we);
+		setEventCounters();
 		we.sendKeys("a");
 		we.sendKeys("b");
 		we.sendKeys("c");
-		assertEventCounters("sendKeys", 8, 1);
+		assertEventCounters("sendKeys", 6, 1);
 	}
 
 	@Test(priority = 2)
@@ -463,12 +481,12 @@ public class TestEventDispatching {
 	
 	@Test(priority = 2)
 	public void testFindElementByElement() {
-		setEventCounters();
 		WebElement we = wd.findElement(By.id("someId"));
 		assertNotNull(we);
+		setEventCounters();
 		WebElement childWe = we.findElement(By.id("someOtherId"));
 		assertNotNull(childWe);
-		assertEventCounters("findElementByElement", 4, 0);
+		assertEventCounters("findElementByElement", 2, 0);
 	}
 
 	@Test(priority = 2)
@@ -483,20 +501,6 @@ public class TestEventDispatching {
 		setEventCounters();
 		wd.executeAsyncScript("some script");
 		assertEventCounters("executeAsyncScript", 2, 0);
-	}
-
-	@Test(priority = 2)
-	public void testSetSize() {
-		setEventCounters();
-		wd.manage().window().setSize(new Dimension(1024, 768));
-		assertEventCounters("setSize", 2, 0);
-	}
-
-	@Test(priority = 2)
-	public void testSetPosition() {
-		setEventCounters();
-		wd.manage().window().setPosition(new Point(0, 0));
-		assertEventCounters("setPosition", 2, 0);
 	}
 
 	@Test(priority = 2)
@@ -540,10 +544,11 @@ public class TestEventDispatching {
 
 	@Test(priority = 2)
 	public void testFrameByElement() {
+		WebElement elem = wd.findElement(By.id("someId"));
+		assertNotNull(elem);
 		setEventCounters();
-		WebDriver returnedWd = wd.switchTo().frame(wd.findElement(By.id("someId")));
-		assertNotNull(returnedWd);
-		assertEventCounters("frameByElement", 4, 0);
+		assertNotNull(wd.switchTo().frame(elem));
+		assertEventCounters("frameByElement", 2, 0);
 	}
 
 	@Test(priority = 2)
@@ -656,7 +661,8 @@ public class TestEventDispatching {
 	public void testGetScriptTimeout() {
 		setEventCounters();
 		Duration timeout = wd.manage().timeouts().getScriptTimeout();
-		assertEventCounters("setScriptTimeout", 2, 0);
+		assertEquals(timeout.getSeconds(), 3L);
+		assertEventCounters("getScriptTimeout", 2, 0);
 	}
 
 	@Test(priority = 2)
@@ -667,6 +673,14 @@ public class TestEventDispatching {
 	}
 
 	@Test(priority = 2)
+	public void testGetImplicitWaitTimeout() {
+		setEventCounters();
+		Duration timeout = wd.manage().timeouts().getImplicitWaitTimeout();
+		assertEquals(timeout.getSeconds(), 1L);
+		assertEventCounters("getImplicitWaitTimeout", 2, 0);
+	}
+
+	@Test(priority = 2)
 	public void testPageLoadTimeout() {
 		setEventCounters();
 		wd.manage().timeouts().pageLoadTimeout(Duration.ofSeconds(5));
@@ -674,7 +688,15 @@ public class TestEventDispatching {
 	}
 
 	@Test(priority = 2)
-	public void testTakeScreenshots() {
+	public void testGetPageLoadTimeout() {
+		setEventCounters();
+		Duration timeout = wd.manage().timeouts().getPageLoadTimeout();
+		assertEquals(timeout.getSeconds(), 2L);
+		assertEventCounters("getPageLoadTimeout", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testDoNotTakeScreenshotsOnExplicitTakeScreenshots() {
 		setEventCounters();
 		wd.getScreenshotAs(OutputType.FILE);
 		WebElement we = wd.findElement(By.id("someId"));
@@ -688,6 +710,61 @@ public class TestEventDispatching {
 		setEventCounters();
 		wd.quit();
 		assertEventCounters("quit", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testMaximize() {
+		setEventCounters();
+		wd.manage().window().maximize();
+		assertEventCounters("manage.window.maximize", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testMinimize() {
+		setEventCounters();
+		wd.manage().window().minimize();
+		assertEventCounters("manage.window.minimize", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testFullscreen() {
+		setEventCounters();
+		wd.manage().window().fullscreen();
+		assertEventCounters("manage.window.fullscreen", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetPosition() {
+		setEventCounters();
+		Point position = wd.manage().window().getPosition();
+		assertNotNull(position);
+		assertEquals(position.getX(), 0);
+		assertEquals(position.getY(), 0);
+		assertEventCounters("manage.window.getPosition", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testSetSize() {
+		setEventCounters();
+		wd.manage().window().setSize(new Dimension(1024, 768));
+		assertEventCounters("manage.window.setSize", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testSetPosition() {
+		setEventCounters();
+		wd.manage().window().setPosition(new Point(0, 0));
+		assertEventCounters("manage.window.setPosition", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testGetSizeByWindow() {
+		setEventCounters();
+		Dimension size = wd.manage().window().getSize();
+		assertNotNull(size);
+		assertEquals(size.getHeight(), 0);
+		assertEquals(size.getWidth(), 0);
+		assertEventCounters("manage.window.getSize", 2, 0);
 	}
 
 	@Test(priority = 2)
@@ -741,6 +818,82 @@ public class TestEventDispatching {
 		assertEventCounters("setScriptTimeout", 2, 0);
 	}
 
+	/*
+	 * Tests for RemoteKeyboard
+	 */
+	@Test(priority = 2)
+	public void testSendKeysByKeyboard() {
+		setEventCounters();
+		wd.getKeyboard().sendKeys(MockCommandExecutor.STRING_ALLISWELL_VALUE);
+		assertEventCounters("keyboard.sendKeys", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testPressKey() {
+		setEventCounters();
+		wd.getKeyboard().pressKey("a");
+		assertEventCounters("keyboard.pressKey", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testReleaseKey() {
+		setEventCounters();
+		wd.getKeyboard().releaseKey("a");
+		assertEventCounters("keyboard.releaseKey", 2, 0);
+	}
+
+	/*
+	 * Tests for RemoteMouse
+	 */
+	@Test(priority = 2)
+	public void testClickByMouse() {
+		setEventCounters();
+		wd.getMouse().click(COORDINATE_0_0);
+		assertEventCounters("mouse.click", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testContextClick() {
+		setEventCounters();
+		wd.getMouse().contextClick(COORDINATE_0_0);
+		assertEventCounters("mouse.contextClick", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testDoubleClick() {
+		setEventCounters();
+		wd.getMouse().doubleClick(COORDINATE_0_0);
+		assertEventCounters("mouse.doubleClick", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testMouseDown() {
+		setEventCounters();
+		wd.getMouse().mouseDown(COORDINATE_0_0);
+		assertEventCounters("mouse.mouseDown", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testMouseUp() {
+		setEventCounters();
+		wd.getMouse().mouseUp(COORDINATE_0_0);
+		assertEventCounters("mouse.mouseUp", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testMouseMove() {
+		setEventCounters();
+		wd.getMouse().mouseMove(COORDINATE_0_0);
+		assertEventCounters("mouse.mouseMove", 2, 0);
+	}
+
+	@Test(priority = 2)
+	public void testMouseMoveWithOffset() {
+		setEventCounters();
+		wd.getMouse().mouseMove(COORDINATE_0_0, 0, 0);
+		assertEventCounters("mouse.mouseMoveWithOffset", 2, 0);
+	}
+
 	private void setEventCounters() {
 		numOfEventsBefore = fullLogger.getListOfEventsRecorded().size();
 		numOfScreenshotEventsBefore = screenshotLogger.getListOfEventsRecorded().size();
@@ -752,8 +905,19 @@ public class TestEventDispatching {
 	}
 
 	private void assertNumOfLogEntries(String command, int before, int after, int expectedDifference, String eventType) {
-		System.out.println(String.format("Number of events logged by %s before %s: %d, and after: %d", eventType, command, before, after));
-		Assert.assertTrue(after >= before);
-		assertEquals(after - before , expectedDifference);
+		String msg = String.format("Number of events logged by %s before %s: %d, and after: %d did not match expected difference %d", eventType, command, before, after, expectedDifference);
+		Assert.assertTrue(after >= before, msg);
+		assertEquals(after - before , expectedDifference, msg);
 	}
+
+	private static final Coordinates COORDINATE_0_0 = new Coordinates() {
+		@Override
+		public Point onScreen() { return new Point(0, 0); }
+		@Override
+		public Point inViewPort() { return new Point(0, 0); }
+		@Override
+		public Point onPage() { return new Point(0, 0); }
+		@Override
+		public Object getAuxiliary() { return "zero"; }
+	};
 }

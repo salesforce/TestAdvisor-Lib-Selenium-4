@@ -9,11 +9,7 @@ package com.salesforce.cte.listener.selenium;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
@@ -1048,7 +1044,7 @@ public class EventDispatcher {
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setReturnValue(role);
 		for (IEventListener listener : eventListeners)
-			listener.afterGetTagName(event, role, element);		
+			listener.afterGetAriaRole(event, role, element);
 	}
 
 	public void beforeGetAccessibleName(WebElement element) {
@@ -1064,7 +1060,7 @@ public class EventDispatcher {
 		event.setElementLocator(WebDriverEvent.getLocatorFromWebElement(element));
 		event.setReturnValue(role);
 		for (IEventListener listener : eventListeners)
-			listener.afterGetTagName(event, role, element);		
+			listener.afterGetAccessibleName(event, role, element);
 	}
 
 	public void beforeGetTagName(WebElement element) {
@@ -1438,9 +1434,7 @@ public class EventDispatcher {
 	}
 
 	private String charSequence2String(CharSequence... charSequence) {
-		final StringBuilder sb = new StringBuilder(charSequence.length);
-		sb.append(charSequence);
-		return sb.toString();
+		return Arrays.toString(charSequence);
 	}
 
 	private String getCoordinatesAsString(Coordinates where) {
