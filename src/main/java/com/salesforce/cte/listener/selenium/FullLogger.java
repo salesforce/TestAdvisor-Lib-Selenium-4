@@ -100,7 +100,7 @@ public class FullLogger extends AbstractEventListener {
 			devTools.createSession();
 			devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
 			HashMap<String, Object> headers = new HashMap<>();
-			String traceID = administrator.getTestCaseExecution().getTraceId();
+			String traceID = administrator.getTestCaseExecution().generateTraceId();
 			LOGGER.log(Level.INFO, "Set trace id as {0}", traceID);
 			headers.put("x-b3-traceid", traceID);
 			headers.put("x-b3-spanid", traceID);
