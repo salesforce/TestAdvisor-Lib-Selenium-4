@@ -132,11 +132,22 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 	}
 
 	public RemoteWebDriver(Capabilities capabilities) {
-		this(getDefaultServerURL(), Require.nonNull("Capabilities", capabilities));
+		this(getDefaultServerURL(),
+				Require.nonNull("Capabilities", capabilities), true);
+	}
+
+	public RemoteWebDriver(Capabilities capabilities, boolean enableTracing) {
+		this(getDefaultServerURL(),
+				Require.nonNull("Capabilities", capabilities), enableTracing);
 	}
 
 	public RemoteWebDriver(URL remoteAddress, Capabilities capabilities) {
-		this(createTracedExecutorWithTracedHttpClient(Require.nonNull("Server URL", remoteAddress)),
+		this(createExecutor(Require.nonNull("Server URL", remoteAddress), true),
+				Require.nonNull("Capabilities", capabilities));
+	}
+
+	public RemoteWebDriver(URL remoteAddress, Capabilities capabilities, boolean enableTracing) {
+		this(createExecutor(Require.nonNull("Server URL", remoteAddress), enableTracing),
 				Require.nonNull("Capabilities", capabilities));
 	}
 
@@ -170,12 +181,19 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		}
 	}
 
-	private static CommandExecutor createTracedExecutorWithTracedHttpClient(URL remoteAddress) {
-		Tracer tracer = OpenTelemetryTracer.getInstance();
-		CommandExecutor executor = new HttpCommandExecutor(Collections.emptyMap(),
-				ClientConfig.defaultConfig().baseUrl(remoteAddress),
-				new TracedHttpClient.Factory(tracer, HttpClient.Factory.createDefault()));
-		return new TracedCommandExecutor(executor, tracer);
+
+	private static CommandExecutor createExecutor(URL remoteAddress, boolean enableTracing) {
+		ClientConfig config = ClientConfig.defaultConfig().baseUrl(remoteAddress);
+		if (enableTracing) {
+			Tracer tracer = OpenTelemetryTracer.getInstance();
+			CommandExecutor executor = new HttpCommandExecutor(
+					Collections.emptyMap(),
+					config,
+					new TracedHttpClient.Factory(tracer, HttpClient.Factory.createDefault()));
+			return new TracedCommandExecutor(executor, tracer);
+		} else {
+			return new HttpCommandExecutor(config);
+		}
 	}
 
 	@Beta
@@ -211,7 +229,8 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		Set<String> logTypesToInclude = builder.build();
 
 		LocalLogs performanceLogger = LocalLogs.getStoringLoggerInstance(logTypesToInclude);
-		LocalLogs clientLogs = LocalLogs.getHandlerBasedLoggerInstance(LoggingHandler.getInstance(), logTypesToInclude);
+		LocalLogs clientLogs = LocalLogs.getHandlerBasedLoggerInstance(
+				LoggingHandler.getInstance(), logTypesToInclude);
 		localLogs = LocalLogs.getCombinedLogsHolder(clientLogs, performanceLogger);
 		remoteLogs = new RemoteLogs(executeMethod, localLogs);
 
@@ -230,26 +249,30 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		Response response = execute(DriverCommand.NEW_SESSION(singleton(capabilities)));
 
 		if (response == null) {
-			throw new SessionNotCreatedException("The underlying command executor returned a null response.");
+			throw new SessionNotCreatedException(
+					"The underlying command executor returned a null response.");
 		}
 
 		Object responseValue = response.getValue();
 
 		if (responseValue == null) {
 			throw new SessionNotCreatedException(
-					"The underlying command executor returned a response without payload: " + response.toString());
+					"The underlying command executor returned a response without payload: " +
+							response.toString());
 		}
 
 		if (!(responseValue instanceof Map)) {
 			throw new SessionNotCreatedException(
-					"The underlying command executor returned a response with a non well formed payload: "
-							+ response.toString());
+					"The underlying command executor returned a response with a non well formed payload: " +
+							response.toString());
 		}
 
 		@SuppressWarnings("unchecked")
 		Map<String, Object> rawCapabilities = (Map<String, Object>) responseValue;
 		MutableCapabilities returnedCapabilities = new MutableCapabilities(rawCapabilities);
-		String platformString = (String) rawCapabilities.getOrDefault(PLATFORM, rawCapabilities.get(PLATFORM_NAME));
+		String platformString = (String) rawCapabilities.getOrDefault(
+				PLATFORM,
+				rawCapabilities.get(PLATFORM_NAME));
 		Platform platform;
 		try {
 			if (platformString == null || "".equals(platformString)) {
@@ -351,9 +374,21 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 			String base64EncodedPng = new String((byte[]) result);
 			return outputType.convertFromBase64Png(base64EncodedPng);
 		} else {
-			throw new RuntimeException(String.format("Unexpected result for %s command: %s", DriverCommand.SCREENSHOT,
+			throw new RuntimeException(String.format("Unexpected result for %s command: %s",
+					DriverCommand.SCREENSHOT,
 					result == null ? "null" : result.getClass().getName() + " instance"));
 		}
+	}
+
+	@Override
+	public Pdf print(PrintOptions printOptions) throws WebDriverException {
+		eventDispatcher.beforePrint(printOptions);
+		Response response = execute(DriverCommand.PRINT_PAGE(printOptions));
+
+		Object result = response.getValue();
+		Pdf printedPage = new Pdf((String) result);
+		eventDispatcher.afterPrint(printOptions, printedPage);
+		return printedPage;
 	}
 
 	@Override
@@ -363,7 +398,10 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		return findElement(this, DriverCommand::FIND_ELEMENT, locator);
 	}
 
-	WebElement findElement(SearchContext context, BiFunction<String, Object, CommandPayload> findCommand, By locator) {
+	WebElement findElement(
+			SearchContext context,
+			BiFunction<String, Object, CommandPayload> findCommand,
+			By locator) {
 		eventDispatcher.beforeFindElement(locator);
 		WebElement returnedElement = elementLocation.findElement(this, context, findCommand, locator);
 		eventDispatcher.afterFindElement(returnedElement, locator);
@@ -378,7 +416,9 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		return findElements(this, DriverCommand::FIND_ELEMENTS, locator);
 	}
 
-	public List<WebElement> findElements(SearchContext context, BiFunction<String, Object, CommandPayload> findCommand,
+	public List<WebElement> findElements(
+			SearchContext context,
+			BiFunction<String, Object, CommandPayload> findCommand,
 			By locator) {
 		eventDispatcher.beforeFindElements(locator);
 		List<WebElement> returnedElements = innerFindElements(context, findCommand, locator);
@@ -486,7 +526,8 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 			Set<String> handles = new LinkedHashSet<>(returnedValues);
 			return handles;
 		} catch (ClassCastException ex) {
-			throw new WebDriverException("Returned value cannot be converted to List<String>: " + value, ex);
+			throw new WebDriverException(
+					"Returned value cannot be converted to List<String>: " + value, ex);
 		}
 	}
 
@@ -512,7 +553,8 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		// Escape the quote marks
 		script = script.replaceAll("\"", "\\\"");
 
-		List<Object> convertedArgs = Stream.of(args).map(new WebElementToJsonConverter()).collect(Collectors.toList());
+		List<Object> convertedArgs = Stream.of(args).map(new WebElementToJsonConverter()).collect(
+				Collectors.toList());
 
 		boolean sendToEventDispatcher = !script.startsWith(IGNORE_COMMAND_TAG);
 		if (!sendToEventDispatcher)
@@ -530,14 +572,15 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 	@Override
 	public Object executeAsyncScript(String script, Object... args) {
 		if (!isJavascriptEnabled()) {
-			throw new UnsupportedOperationException(
-					"You must be using an underlying instance of " + "WebDriver that supports executing javascript");
+			throw new UnsupportedOperationException("You must be using an underlying instance of " +
+					"WebDriver that supports executing javascript");
 		}
 
 		// Escape the quote marks
 		script = script.replaceAll("\"", "\\\"");
 
-		List<Object> convertedArgs = Stream.of(args).map(new WebElementToJsonConverter()).collect(Collectors.toList());
+		List<Object> convertedArgs = Stream.of(args).map(new WebElementToJsonConverter()).collect(
+				Collectors.toList());
 
 		boolean sendToEventDispatcher = !script.startsWith(IGNORE_COMMAND_TAG);
 		if (!sendToEventDispatcher)
@@ -595,8 +638,8 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 
 		long start = System.currentTimeMillis();
 		String currentName = Thread.currentThread().getName();
-		Thread.currentThread()
-				.setName(String.format("Forwarding %s on session %s to remote", command.getName(), sessionId));
+		Thread.currentThread().setName(
+						String.format("Forwarding %s on session %s to remote", command.getName(), sessionId));
 		try {
 			log(sessionId, command.getName(), command, When.BEFORE);
 			response = executor.execute(command);
@@ -675,17 +718,6 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 	}
 
 	@Override
-	public Pdf print(PrintOptions printOptions) throws WebDriverException {
-		eventDispatcher.beforePrint(printOptions);
-		Response response = execute(DriverCommand.PRINT_PAGE(printOptions));
-
-		Object result = response.getValue();
-		Pdf printedPage = new Pdf((String) result);
-		eventDispatcher.afterPrint(printOptions, printedPage);
-		return printedPage;
-	}
-
-	@Override
 	public void resetInputState() {
 		eventDispatcher.beforeResetInputState();
 		execute(DriverCommand.CLEAR_ACTIONS_STATE);
@@ -704,13 +736,15 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 
 	@Override
 	public VirtualAuthenticator addVirtualAuthenticator(VirtualAuthenticatorOptions options) {
-		String authenticatorId = (String) execute(DriverCommand.ADD_VIRTUAL_AUTHENTICATOR, options.toMap()).getValue();
+		String authenticatorId = (String)
+				execute(DriverCommand.ADD_VIRTUAL_AUTHENTICATOR, options.toMap()).getValue();
 		return new RemoteVirtualAuthenticator(authenticatorId);
 	}
 
 	@Override
 	public void removeVirtualAuthenticator(VirtualAuthenticator authenticator) {
-		execute(DriverCommand.REMOVE_VIRTUAL_AUTHENTICATOR, ImmutableMap.of("authenticatorId", authenticator.getId()));
+		execute(DriverCommand.REMOVE_VIRTUAL_AUTHENTICATOR,
+				ImmutableMap.of("authenticatorId", authenticator.getId()));
 	}
 
 	/**
@@ -733,7 +767,8 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 			}
 		}
 		// No need to log a screenshot response.
-		if ((commandName.equals(DriverCommand.SCREENSHOT) || commandName.equals(DriverCommand.ELEMENT_SCREENSHOT))
+		if ((commandName.equals(DriverCommand.SCREENSHOT)
+				|| commandName.equals(DriverCommand.ELEMENT_SCREENSHOT))
 				&& toLog instanceof Response) {
 			Response responseToLog = (Response) toLog;
 			Response copyToLog = new Response(new SessionId((responseToLog).getSessionId()));
@@ -763,8 +798,8 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 	}
 
 	/**
-	 * Set the file detector to be used when sending keyboard input. By default,
-	 * this is set to a file detector that does nothing.
+	 * Set the file detector to be used when sending keyboard input. By default, this is set to a file
+	 * detector that does nothing.
 	 *
 	 * @param detector The detector to use. Must not be null.
 	 * @see FileDetector
@@ -794,12 +829,18 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 			platform = "unknown";
 		}
 
-		return String.format("%s: %s on %s (%s)", getClass().getSimpleName(), caps.getBrowserName(), platform,
+		return String.format(
+				"%s: %s on %s (%s)",
+				getClass().getSimpleName(),
+				caps.getBrowserName(),
+				platform,
 				getSessionId());
 	}
 
 	public enum When {
-		BEFORE, AFTER, EXCEPTION
+		BEFORE,
+		AFTER,
+		EXCEPTION
 	}
 
 	protected class RemoteWebDriverOptions implements Options {
@@ -851,6 +892,38 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 			return toReturn;
 		}
 
+		@SuppressWarnings({ "unchecked" })
+		private Set<Cookie> innerGetCookies() {
+			Object returned = execute(DriverCommand.GET_ALL_COOKIES).getValue();
+
+			Set<Cookie> toReturn = new HashSet<>();
+
+			if (!(returned instanceof Collection)) {
+				return toReturn;
+			}
+
+			((Collection<?>) returned).stream()
+					.map(o -> (Map<String, Object>) o)
+					.map(rawCookie -> {
+				// JSON object keys are defined in
+				// https://w3c.github.io/webdriver/#dfn-table-for-cookie-conversion.
+				Cookie.Builder builder =
+						new Cookie.Builder((String) rawCookie.get("name"), (String) rawCookie.get("value"))
+								.path((String) rawCookie.get("path"))
+								.domain((String) rawCookie.get("domain"))
+								.isSecure(rawCookie.containsKey("secure") && (Boolean) rawCookie.get("secure"))
+								.isHttpOnly(
+										rawCookie.containsKey("httpOnly") && (Boolean) rawCookie.get("httpOnly"))
+								.sameSite((String) rawCookie.get("sameSite"));
+
+				Number expiryNum = (Number) rawCookie.get("expiry");
+				builder.expiresOn(expiryNum == null ? null : new Date(SECONDS.toMillis(expiryNum.longValue())));
+				return builder.build();
+			}).forEach(toReturn::add);
+
+			return toReturn;
+		}
+
 		@Override
 		public Cookie getCookieNamed(String name) {
 			eventDispatcher.beforeGetCookieNamed(name);
@@ -863,34 +936,6 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 			}
 			eventDispatcher.afterGetCookieNamed(name, null);
 			return null;
-		}
-
-		@SuppressWarnings({ "unchecked" })
-		private Set<Cookie> innerGetCookies() {
-			Object returned = execute(DriverCommand.GET_ALL_COOKIES).getValue();
-
-			Set<Cookie> toReturn = new HashSet<>();
-
-			if (!(returned instanceof Collection)) {
-				return toReturn;
-			}
-
-			((Collection<?>) returned).stream().map(o -> (Map<String, Object>) o).map(rawCookie -> {
-				// JSON object keys are defined in
-				// https://w3c.github.io/webdriver/#dfn-table-for-cookie-conversion.
-				Cookie.Builder builder = new Cookie.Builder((String) rawCookie.get("name"),
-						(String) rawCookie.get("value")).path((String) rawCookie.get("path"))
-								.domain((String) rawCookie.get("domain"))
-								.isSecure(rawCookie.containsKey("secure") && (Boolean) rawCookie.get("secure"))
-								.isHttpOnly(rawCookie.containsKey("httpOnly") && (Boolean) rawCookie.get("httpOnly"))
-								.sameSite((String) rawCookie.get("sameSite"));
-
-				Number expiryNum = (Number) rawCookie.get("expiry");
-				builder.expiresOn(expiryNum == null ? null : new Date(SECONDS.toMillis(expiryNum.longValue())));
-				return builder.build();
-			}).forEach(toReturn::add);
-
-			return toReturn;
 		}
 
 		@Override
@@ -1145,10 +1190,11 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 		public WebDriver frame(String frameName) {
 			eventDispatcher.beforeFrameByName(frameName);
 			String name = frameName.replaceAll("(['\"\\\\#.:;,!?+<>=~*^$|%&@`{}\\-/\\[\\]\\(\\)])", "\\\\$1");
-			List<WebElement> frameElements = RemoteWebDriver.this
-					.innerFindElements(RemoteWebDriver.this, DriverCommand::FIND_ELEMENTS, By.cssSelector("frame[name='" + name + "'],iframe[name='" + name + "']"));
+			List<WebElement> frameElements = RemoteWebDriver.this.innerFindElements(
+					RemoteWebDriver.this, DriverCommand::FIND_ELEMENTS, By.cssSelector("frame[name='" + name + "'],iframe[name='" + name + "']"));
 			if (frameElements.size() == 0) {
-				frameElements = RemoteWebDriver.this.innerFindElements(RemoteWebDriver.this, DriverCommand::FIND_ELEMENTS, By.cssSelector("frame#" + name + ",iframe#" + name));
+				frameElements = RemoteWebDriver.this.innerFindElements(
+						RemoteWebDriver.this, DriverCommand::FIND_ELEMENTS, By.cssSelector("frame#" + name + ",iframe#" + name));
 			}
 			if (frameElements.size() == 0) {
 				throw new NoSuchFrameException("No frame element found by name or id " + frameName);
@@ -1302,14 +1348,17 @@ public class RemoteWebDriver implements WebDriver, JavascriptExecutor, HasInputD
 
 		@Override
 		public void addCredential(Credential credential) {
-			execute(DriverCommand.ADD_CREDENTIAL, new ImmutableMap.Builder<String, Object>().putAll(credential.toMap())
-					.put("authenticatorId", id).build());
+			execute(DriverCommand.ADD_CREDENTIAL,
+					new ImmutableMap.Builder<String, Object>()
+							.putAll(credential.toMap())
+							.put("authenticatorId", id)
+							.build());
 		}
 
 		@Override
 		public List<Credential> getCredentials() {
-			List<Map<String, Object>> response = (List<Map<String, Object>>) execute(DriverCommand.GET_CREDENTIALS,
-					ImmutableMap.of("authenticatorId", id)).getValue();
+			List<Map<String, Object>> response = (List<Map<String, Object>>)
+					execute(DriverCommand.GET_CREDENTIALS, ImmutableMap.of("authenticatorId", id)).getValue();
 			return response.stream().map(Credential::fromMap).collect(Collectors.toList());
 		}
 

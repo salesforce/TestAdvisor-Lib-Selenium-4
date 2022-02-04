@@ -42,8 +42,8 @@
 	         when using JDK 11 or newer -->
 	    <mockito.version>4.2.0</mockito.version>
 	    <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-	    <selenium.version>4.1.1</selenium.version>
-	    <testadvisor.version>0.2.1</testadvisor.version>
+	    <selenium.version>4.1.2</selenium.version>
+	    <testadvisor.version>0.2.2</testadvisor.version>
 	    <testng.version>7.4.0</testng.version>
 	</properties>
 
