@@ -49,8 +49,9 @@ public class EventDispatcher {
 	}
 
 	private EventDispatcher() {
-		eventListeners.add(new FullLogger());
-		eventListeners.add(new ScreenshotLogger());
+		eventListeners.add(new FullListener());
+		eventListeners.add(new ScreenshotListener());
+        eventListeners.add(new TestStepListener());
 	}
 
 	public void setWebDriver(WebDriver driver){

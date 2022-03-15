@@ -24,7 +24,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
  * The {@link com.salesforce.cte.listener.selenium.EventDispatcher} creates such a record before and after each command. The Event object
  * is then passed on to any listeners implementing the {@link com.salesforce.cte.listener.selenium.IEventListener} interface.
  * 
- * The default listener is {@link com.salesforce.cte.listener.selenium.FullLogger} which collects all Event objects as they come.
+ * The default listener is {@link com.salesforce.cte.listener.selenium.FullListener} which collects all Event objects as they come.
  * 
  * @author gneumann
  * @since 1.0

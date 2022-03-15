@@ -4,54 +4,37 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause
  */
-
 package com.salesforce.cte.listener.selenium;
 
-import java.io.File;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
+import com.salesforce.cte.common.TestEvent;
+import com.salesforce.cte.common.TestEventType;
+
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-
-import com.salesforce.cte.admin.TestAdvisorConfiguration;
-import com.salesforce.cte.common.TestEvent;
+import org.openqa.selenium.devtools.v85.console.model.ConsoleMessage.Level;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
-public class ScreenshotLogger extends AbstractEventListener {
-	private ThreadLocal<String> cachedSendKeysLocator = new ThreadLocal<>();
-    
-    private TakesScreenshot tss;
-	private RemoteWebDriver rwd;
+public class TestStepListener extends AbstractEventListener {
+    protected RemoteWebDriver rwd;
 
 	@Override
 	public void setWebDriver(WebDriver driver) {
-		if (driver instanceof RemoteWebDriver) {
-			List<Method> methods = Arrays.stream(RemoteWebDriver.class.getMethods()).filter(m -> m.getName().equals("getScreenshotAsForTestAdvisor")).
-					collect(Collectors.toList());
-			if (methods.isEmpty())
-				this.tss = (TakesScreenshot) driver;
-			else
-				this.rwd = (RemoteWebDriver) driver;
-		}
+		this.rwd = (RemoteWebDriver) driver;
 	}
-	
+    
     /*--------------------------------------------------------------------
 	 * Section for all commands called directly from WebDriver object.
 	 *--------------------------------------------------------------------*/
     @Override
 	public void beforeClose(WebDriverEvent event) {
-        captureScreenShot(event); 
+        captureTestStep(event); 
 	}
 
 	@Override
 	public void beforeGet(WebDriverEvent event, String url) {
-		captureScreenShot(event);
+		captureTestStep(event);
 	}
 
     /*--------------------------------------------------------------------
@@ -62,7 +45,7 @@ public class ScreenshotLogger extends AbstractEventListener {
     @Override
 	public void beforeExecuteScript(WebDriverEvent event, String script, List<Object> convertedArgs) {
         if (script.contains("click")){
-            captureScreenShot(event);
+            captureTestStep(event);
         }
 	}
 
@@ -71,12 +54,12 @@ public class ScreenshotLogger extends AbstractEventListener {
 	 *---------------------------------------------------------------------------*/
     @Override
 	public void beforeBack(WebDriverEvent event) {
-        captureScreenShot(event);
+        captureTestStep(event);
 	}
 
 	@Override
 	public void beforeForward(WebDriverEvent event) {
-        captureScreenShot(event);
+        captureTestStep(event);
 	}
 
 	/*---------------------------------------------------------------------------
@@ -85,25 +68,26 @@ public class ScreenshotLogger extends AbstractEventListener {
 
 	@Override
 	public void beforeClick(WebDriverEvent event, WebElement element) {
-        captureScreenShot(event);   
+        captureTestStep(event);   
 	}
 
 	@Override
 	public void beforeClear(WebDriverEvent event, WebElement element) {
-        captureScreenShot(event);   
+        captureTestStep(event);   
 	}
 
 	@Override
 	public void beforeSendKeysByElement(WebDriverEvent event, WebElement element, CharSequence... keysToSend) {
-		// Skip capturing a screenshot if it is the same locator, because it means
+		// Skip capturing a url if it is the same locator, because it means
 		// a test is sending text character by character to the same text field.
-		if (isDifferentLocator(element))
-			captureScreenShot(event);
+		if (isDifferentLocator(element)){
+            captureTestStep(event);
+        }
 	}
 
 	@Override
 	public void beforeSubmit(WebDriverEvent event, WebElement element) {
-        captureScreenShot(event);   
+        captureTestStep(event);   
     }
 
     /*---------------------------------------------------------------------------
@@ -112,52 +96,24 @@ public class ScreenshotLogger extends AbstractEventListener {
 
 	@Override
 	public void beforeDismiss(WebDriverEvent event) {
-        captureScreenShot(event);
+        captureTestStep(event);
 	}
 
 	@Override
 	public void beforeAccept(WebDriverEvent event) {
-        captureScreenShot(event);
+        captureTestStep(event);
 	}
 
 	@Override
 	public void beforeSendKeysByAlert(WebDriverEvent event, String keysToSend) {
-        captureScreenShot(event);
+        captureTestStep(event);
 	}
 
-    private void captureScreenShot(WebDriverEvent event){
+    private void captureTestStep(WebDriverEvent event){
         logEntries.add(event);
-		if (TestAdvisorConfiguration.getIsScreenshotCaptureEnabled()){
-			File file = null;
-			if (rwd != null)
-				file = rwd.getScreenshotAsForTestAdvisor(OutputType.FILE);
-			else
-				file = tss.getScreenshotAs(OutputType.FILE);
-			TestEvent testEvent = createTestEvent(event,Level.INFO);
-			testEvent.setStreenshotPath(file.getAbsolutePath());
-			administrator.getTestCaseExecution().appendEvent(testEvent);
-		}
-    }
-    
-    private boolean isDifferentLocator(WebElement elem) {
-    	String locator = WebDriverEvent.getLocatorFromWebElement(elem);
-    	// if locator is null we assume it's a different locator
-    	if (locator == null)
-    		return true;
-    	
-    	String cachedLocator = cachedSendKeysLocator.get();
-    	// if cachedLocator is null we assume it's a different locator
-    	if (cachedLocator == null) {
-    		// cache the currently used locator
-    		cachedSendKeysLocator.set(locator);
-    		return true;    		
-    	}
-
-    	if (cachedLocator.equals(locator))
-    		return false;
-    	
-    	// currently used locator is different from cached one; replace the cached locator
-    	cachedSendKeysLocator.set(locator);
-    	return true;
+        TestEvent testEvent = new TestEvent(TestEventType.URL, rwd.getCurrentUrl(), Level.INFO.toString().toUpperCase());
+        testEvent.setSeleniumCmd(event.getCmd().getLongCmdString());
+        testEvent.setSeleniumLocator(event.getElementLocator());
+        administrator.getTestCaseExecution().appendEvent(testEvent);
     }
 }
