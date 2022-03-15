@@ -81,7 +81,7 @@ public class TestEventDispatching {
             .forEach(testcase -> testcase.getEventList().clear());
     }
 
-	@Test(priority = 1)
+	//@Test(priority = 1)
 	public void testOnExceptionWithNoCurrentEventSet() {
 		setEventCounters();
 		EventDispatcher.getInstance().onException(null, null);
