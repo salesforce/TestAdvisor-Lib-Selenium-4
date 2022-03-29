@@ -941,7 +941,7 @@ public class FullListener extends AbstractEventListener {
 	@Override
 	public void onException(WebDriverEvent event, Cmd cmd, Throwable issue) {
 		logEntries.add(event);
-		administrator.getTestCaseExecution().appendEvent(createTestEvent(TestEventType.EXCEPTION, event, Level.WARNING));
+		administrator.getTestCaseExecution().appendEvent(createTestEvent(TestEventType.TEST_EXCEPTION, event, Level.WARNING));
 	}
 
 	private void setTraceId(){
