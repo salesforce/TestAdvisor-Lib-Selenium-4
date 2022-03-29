@@ -1,3 +1,9 @@
+<!--
+ * Copyright (c) 2021, salesforce.com, inc.
+ * All rights reserved.
+ * SPDX-License-Identifier: BSD-3-Clause
+ * For full license text, see the LICENSE file in the repo root or https://opensource.org/licenses/BSD-3-Clause 
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.salesforce.cte</groupId>
@@ -5,7 +11,15 @@
 	<version>0.2.4-SNAPSHOT</version>
 	<name>Selenium 4 support for Test Advisor Library</name>
 	<description>A Selenium 4 based UI test library to generate enhanced test logs</description>
+	<url>http://www.salesforce.com/</url>
 	<packaging>jar</packaging>
+
+	<licenses>
+		<license>
+			<name>BSD 3-Clause</name>
+			<url>file://${basedir}/LICENSE.txt</url>
+		</license>
+	</licenses>
 
 	<developers>
 		<developer>
@@ -26,6 +40,77 @@
 		</developer>
 	</developers>
 
+	<scm>
+		<connection>scm:git:git@github.com:salesforce/TestAdvisor-Lib-Selenium-4.git</connection>
+		<developerConnection>scm:git:git@github.com:salesforce/TestAdvisor-Lib-Selenium-4.git</developerConnection>
+		<url>https://github.com/salesforce/TestAdvisor-Lib-Selenium-4</url>
+		<tag>HEAD</tag>
+	</scm>
+
+	<profiles>
+        <profile>
+            <id>internal</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+            </properties>
+            <distributionManagement>
+                <repository>
+                    <id>nexus</id>
+                    <url>https://nexus.soma.salesforce.com/nexus/content/repositories/releases</url>
+                </repository>
+                <snapshotRepository>
+                    <id>nexus</id>
+                    <url>https://nexus.soma.salesforce.com/nexus/content/repositories/snapshots</url>
+                </snapshotRepository>
+            </distributionManagement>
+        </profile>
+    
+        <profile>
+            <id>public</id>
+            <properties>
+            </properties>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>ossrh</id>
+                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+                </repository>
+            </distributionManagement>
+        </profile>
+        <profile>
+			<id>surefire</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.22.2</version>
+						<executions>
+							<execution>
+								<phase>integration-test</phase>
+								<goals>
+									<goal>test</goal>
+								</goals>
+								<configuration>
+									<excludes>
+										<exclude>none</exclude>
+									</excludes>
+									<includes>
+										<include>**/*IntegrationTest</include>
+									</includes>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+    </profiles>
+
 	<properties>
 		<jdk.version>1.8</jdk.version>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -38,13 +123,17 @@
 	    <maven-release-plugin.version>3.0.0-M4</maven-release-plugin.version>
 	    <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
 	    <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+	    <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
    	    <!-- Use mockito 2.17.0 if using JDK 8; you can upgrade to newer versions
 	         when using JDK 11 or newer -->
 	    <mockito.version>4.2.0</mockito.version>
 	    <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
 	    <selenium.version>4.1.2</selenium.version>
-	    <testadvisor.version>0.2.5</testadvisor.version>
+	    <testadvisor.version>0.2.14</testadvisor.version>
 	    <testng.version>7.4.0</testng.version>
+	    <webdrivermanager.version>5.0.3</webdrivermanager.version>
+	    <junit-jupiter-engine.version>5.8.2</junit-jupiter-engine.version>
+	    <testng-junit5.version>0.0.1</testng-junit5.version>
 	</properties>
 
 	<build>
@@ -143,6 +232,7 @@
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
 				<version>${nexus-staging-maven-plugin.version}</version>
+				<extensions>true</extensions>
 				<executions>
 					<execution>
 						<id>default-deploy</id>
@@ -153,18 +243,10 @@
 					</execution>
 				</executions>
 				<configuration>
-					<skipStaging>true</skipStaging>
+					<serverId>ossrh</serverId>
+					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<autoReleaseAfterClose>true</autoReleaseAfterClose>
 				</configuration>
-			</plugin>
-			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-site-plugin</artifactId>
-			  <version>3.11.0</version>
-			</plugin>
-			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-project-info-reports-plugin</artifactId>
-			  <version>3.2.2</version>
 			</plugin>
 
 			<!-- Nexus release settings -->
@@ -182,37 +264,23 @@
 					<arguments>-B</arguments>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>${maven-gpg-plugin.version}</version>
+				<executions>
+					<execution>
+						<id>sign-artifacts</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
-	<profiles>
-		<profile>
-			<id>surefire</id>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<version>2.22.2</version>
-						<executions>
-							<execution>
-								<phase>integration-test</phase>
-								<goals>
-									<goal>test</goal>
-								</goals>
-								<configuration>
-									<excludes>
-										<exclude>none</exclude>
-									</excludes>
-									<includes>
-										<include>**/*IntegrationTest</include>
-									</includes>
-								</configuration>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.salesforce.cte</groupId>
@@ -249,7 +317,7 @@
 		<dependency>
 			<groupId>io.github.bonigarcia</groupId>
 			<artifactId>webdrivermanager</artifactId>
-			<version>5.0.3</version>
+			<version>${webdrivermanager.version}</version>
 			<scope>test</scope>
 		</dependency>
         
@@ -257,13 +325,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.8.2</version>
+            <version>${junit-jupiter-engine.version}</version>
             <scope>test</scope>
         </dependency>       
         <dependency>
             <groupId>com.github.testng-team</groupId>
             <artifactId>testng-junit5</artifactId>
-            <version>0.0.1</version>
+            <version>${testng-junit5.version}</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -273,20 +341,4 @@
             </exclusions>
         </dependency>
 	</dependencies>
-
-	<scm>
-		<developerConnection>scm:git:git@git.soma.salesforce.com:cqe/TestAdvisor-Lib-Selenium-4.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
-
-	<distributionManagement>
-		<repository>
-			<id>nexus</id>
-			<url>https://nexus.soma.salesforce.com/nexus/content/repositories/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>nexus</id>
-			<url>https://nexus.soma.salesforce.com/nexus/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
 </project>
