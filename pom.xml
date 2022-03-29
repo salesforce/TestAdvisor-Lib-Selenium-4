@@ -8,7 +8,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.salesforce.cte</groupId>
 	<artifactId>testadvisor-lib-selenium-4</artifactId>
-	<version>0.2.14</version>
+	<version>0.2.15-SNAPSHOT</version>
 	<name>Selenium 4 support for Test Advisor Library</name>
 	<description>A Selenium 4 based UI test library to generate enhanced test logs</description>
 	<url>http://www.salesforce.com/</url>
@@ -44,7 +44,7 @@
 		<connection>scm:git:git@github.com:salesforce/TestAdvisor-Lib-Selenium-4.git</connection>
 		<developerConnection>scm:git:git@github.com:salesforce/TestAdvisor-Lib-Selenium-4.git</developerConnection>
 		<url>https://github.com/salesforce/TestAdvisor-Lib-Selenium-4</url>
-		<tag>v0.2.14</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<profiles>
